@@ -478,9 +478,7 @@ class KnowledgeBaseRepository:
         limit: int = 10,
     ) -> List[KnowledgeBase]:
         """Search knowledge base articles."""
-        search_query = session.query(KnowledgeBase).filter(
-            KnowledgeBase.is_active
-        )
+        search_query = session.query(KnowledgeBase).filter(KnowledgeBase.is_active)
 
         # Simple text search (in production, use full-text search)
         if query:
