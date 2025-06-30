@@ -35,6 +35,10 @@ type-check: ## Run type checking
 	@echo "Running type checks..."
 	poetry run mypy src/
 
+validate-deps: ## Validate dependency resolution
+	@echo "Validating dependencies..."
+	python scripts/validate-deps.py
+
 # Testing
 test: ## Run all tests
 	@echo "Running tests..."
