@@ -1,0 +1,200 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: autops-security-policy
+  namespace: autops
+data:
+  policy.yaml: |
+    # AutOps Security Policy Configuration
+    
+    # Authentication and Authorization
+    auth:
+      required: true
+      methods:
+        - oauth2
+        - api_key
+      token_expiry: 3600  # 1 hour
+      refresh_token_expiry: 604800  # 7 days
+      
+    # Rate Limiting
+    rate_limiting:
+      enabled: true
+      global:
+        requests_per_minute: 1000
+        requests_per_hour: 10000
+      per_user:
+        requests_per_minute: 100
+        requests_per_hour: 1000
+      per_ip:
+        requests_per_minute: 200
+        requests_per_hour: 2000
+        
+    # Input Validation
+    input_validation:
+      max_payload_size: 10485760  # 10MB
+      allowed_content_types:
+        - application/json
+        - application/x-www-form-urlencoded
+        - multipart/form-data
+      sanitization:
+        strip_html: true
+        escape_sql: true
+        validate_json: true
+        
+    # Data Protection
+    data_protection:
+      encryption_at_rest: true
+      encryption_in_transit: true
+      data_retention_days: 90
+      pii_detection: true
+      sensitive_data_masking: true
+      
+    # API Security
+    api_security:
+      cors:
+        enabled: true
+        allowed_origins:
+          - "https://yourcompany.slack.com"
+          - "https://app.datadoghq.com"
+        allowed_methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+        allowed_headers:
+          - Authorization
+          - Content-Type
+          - X-Requested-With
+      csrf_protection: true
+      
+    # Network Security
+    network:
+      allowed_ips:
+        - "10.0.0.0/8"      # Internal network
+        - "172.16.0.0/12"   # Docker network
+        - "192.168.0.0/16"  # Private network
+      blocked_ips: []
+      firewall_rules:
+        - port: 8000
+          protocol: tcp
+          source: "0.0.0.0/0"
+        - port: 9090
+          protocol: tcp
+          source: "10.0.0.0/8"  # Prometheus metrics only internal
+          
+    # Secrets Management
+    secrets:
+      rotation_period_days: 30
+      encryption_algorithm: "AES-256-GCM"
+      key_derivation: "PBKDF2"
+      secure_storage: true
+      audit_access: true
+      
+    # Audit and Logging
+    audit:
+      enabled: true
+      log_level: "INFO"
+      events:
+        - authentication
+        - authorization
+        - data_access
+        - configuration_changes
+        - security_events
+      retention_days: 365
+      
+    # Vulnerability Management
+    vulnerability:
+      scanning:
+        enabled: true
+        frequency: "daily"
+        severity_threshold: "medium"
+      dependency_checking: true
+      security_updates: "auto"
+      
+    # Incident Response
+    incident_response:
+      auto_lockdown:
+        enabled: true
+        triggers:
+          - multiple_failed_auth
+          - suspicious_activity
+          - security_violation
+      notification_channels:
+        - slack: "#security-alerts"
+        - email: "security@yourcompany.com"
+        - pagerduty: "security-team"
+        
+    # Compliance
+    compliance:
+      frameworks:
+        - SOC2
+        - GDPR
+        - HIPAA
+      data_classification:
+        - public
+        - internal
+        - confidential
+        - restricted
+      access_controls:
+        rbac: true
+        least_privilege: true
+        segregation_of_duties: true
+        
+    # Agent Security
+    agent_security:
+      execution_timeout: 300  # 5 minutes
+      resource_limits:
+        cpu: "500m"
+        memory: "512Mi"
+        disk: "1Gi"
+      sandbox: true
+      allowed_tools:
+        - github
+        - datadog
+        - slack
+        - pagerduty
+      tool_permissions:
+        github:
+          - read:repo
+          - read:org
+          - write:repo_hook
+        datadog:
+          - metrics:read
+          - logs:read
+          - events:read
+        slack:
+          - chat:write
+          - channels:read
+          - users:read
+        pagerduty:
+          - incidents:read
+          - incidents:write
+          - services:read
+          
+    # Monitoring and Alerting
+    security_monitoring:
+      enabled: true
+      metrics:
+        - failed_authentications
+        - unauthorized_access_attempts
+        - unusual_activity_patterns
+        - data_exfiltration_attempts
+      alerts:
+        - name: "Multiple Failed Auth"
+          condition: "failed_auth > 5 in 5min"
+          severity: "high"
+        - name: "Unusual API Usage"
+          condition: "requests > 10x baseline"
+          severity: "medium"
+        - name: "Unauthorized Tool Access"
+          condition: "tool_access_denied > 0"
+          severity: "high"
+          
+    # Disaster Recovery
+    disaster_recovery:
+      backup_frequency: "daily"
+      backup_retention: 30
+      recovery_time_objective: 4  # hours
+      recovery_point_objective: 1  # hour
+      backup_encryption: true
+      offsite_backup: true 

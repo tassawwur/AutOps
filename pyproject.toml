@@ -1,0 +1,114 @@
+[tool.poetry]
+name = "autops"
+version = "0.1.0"
+description = "AI-powered DevOps automation tool"
+authors = ["AutOps AI"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+fastapi = "^0.110.0"
+uvicorn = {extras = ["standard"], version = "^0.27.1"}
+pydantic = "^2.6.3"
+pydantic-settings = "^2.2.1"
+openai = "^1.13.3"
+python-dotenv = "^1.0.1"
+slack_sdk = "^3.27.0"
+PyGithub = "^2.2.0"
+datadog-api-client = "^2.22.0"
+pdpyras = "^4.6.0"
+python-gitlab = "^4.4.0"
+mcp = "^1.0.0"
+# Production dependencies
+structlog = "^23.2.0"
+redis = "^5.0.1"
+celery = "^5.3.4"
+prometheus-client = "^0.19.0"
+httpx = "^0.26.0"
+tenacity = "^8.2.3"
+cryptography = "^42.0.0"
+python-multipart = "^0.0.6"
+aiofiles = "^23.2.1"
+# Database and authentication
+sqlalchemy = "^2.0.0"
+alembic = "^1.12.0"
+asyncpg = "^0.29.0"
+passlib = {extras = ["bcrypt"], version = "^1.7.4"}
+python-jose = {extras = ["cryptography"], version = "^3.3.0"}
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.3"
+pytest-asyncio = "^0.23.2"
+pytest-cov = "^4.1.0"
+black = "^23.12.1"
+flake8 = "^7.0.0"
+mypy = "^1.8.0"
+pre-commit = "^3.6.0"
+httpx = "^0.26.0"
+bandit = "^1.7.5"
+safety = "^2.3.5"
+detect-secrets = "^1.4.0"
+pytest-watch = "^4.2.0"
+locust = "^2.17.0"
+respx = "^0.20.2"
+pytest-xdist = "^3.5.0"
+coverage = {extras = ["toml"], version = "^7.4.0"}
+
+[tool.poetry.group.test.dependencies]
+pytest-mock = "^3.12.0"
+fakeredis = "^2.20.1"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 88
+target-version = ['py39']
+
+[tool.mypy]
+python_version = "3.9"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_any_generics = true
+no_implicit_reexport = true
+show_error_codes = true
+
+[[tool.mypy.overrides]]
+module = [
+    "slack_sdk.*",
+    "github.*",
+    "gitlab.*",
+    "datadog_api_client.*",
+    "pdpyras.*",
+    "mcp.*",
+    "structlog.*",
+    "prometheus_client.*",
+    "celery.*",
+    "redis.*"
+]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "--cov=src --cov-report=term-missing --cov-report=html --cov-fail-under=80"
+
+[tool.coverage.run]
+source = ["src"]
+omit = ["tests/*", "*/migrations/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+]

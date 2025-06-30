@@ -1,0 +1,164 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: autops
+  labels:
+    app: autops
+    version: v1
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: autops
+  template:
+    metadata:
+      labels:
+        app: autops
+        version: v1
+    spec:
+      serviceAccountName: autops
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+      - name: autops
+        image: autops:latest
+        imagePullPolicy: Always
+        ports:
+        - name: http
+          containerPort: 8000
+          protocol: TCP
+        - name: metrics
+          containerPort: 9090
+          protocol: TCP
+        env:
+        - name: ENVIRONMENT
+          value: "production"
+        - name: LOG_LEVEL
+          value: "INFO"
+        - name: JSON_LOGS
+          value: "true"
+        - name: API_WORKERS
+          value: "4"
+        - name: ENABLE_METRICS
+          value: "true"
+        envFrom:
+        - secretRef:
+            name: autops-secrets
+        - configMapRef:
+            name: autops-config
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: http
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 2
+        volumeMounts:
+        - name: logs
+          mountPath: /app/logs
+        - name: tmp
+          mountPath: /tmp
+      volumes:
+      - name: logs
+        emptyDir: {}
+      - name: tmp
+        emptyDir: {}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - autops
+              topologyKey: kubernetes.io/hostname
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: autops-service
+  labels:
+    app: autops
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 80
+    targetPort: http
+    protocol: TCP
+  - name: metrics
+    port: 9090
+    targetPort: metrics
+    protocol: TCP
+  selector:
+    app: autops
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: autops
+  labels:
+    app: autops
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: autops-config
+  labels:
+    app: autops
+data:
+  REDIS_URL: "redis://redis-service:6379/0"
+  CELERY_BROKER_URL: "redis://redis-service:6379/1"
+  CELERY_RESULT_BACKEND: "redis://redis-service:6379/2"
+  RATE_LIMIT_REQUESTS_PER_MINUTE: "60"
+  CIRCUIT_BREAKER_FAILURE_THRESHOLD: "5"
+  CIRCUIT_BREAKER_RECOVERY_TIMEOUT: "60"
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: autops-secrets
+  labels:
+    app: autops
+type: Opaque
+stringData:
+  OPENAI_API_KEY: "your-openai-api-key"
+  SLACK_BOT_TOKEN: "your-slack-bot-token"
+  SLACK_SIGNING_SECRET: "your-slack-signing-secret"
+  GITHUB_TOKEN: "your-github-token"
+  GITHUB_OWNER: "your-github-owner"
+  DATADOG_API_KEY: "your-datadog-api-key"
+  DATADOG_APP_KEY: "your-datadog-app-key"
+  PAGERDUTY_API_KEY: "your-pagerduty-api-key"
+  PAGERDUTY_EMAIL: "your-email@company.com"
+  ENCRYPTION_KEY: "your-32-character-encryption-key" 
