@@ -10,27 +10,31 @@ logger = get_logger(__name__)
 TOOL_SUPPORT = {
     "github_client": {
         "supported": True,
-        "actions": ["get_latest_pipeline_status", "get_repository_info", "get_pull_requests"]
+        "actions": [
+            "get_latest_pipeline_status",
+            "get_repository_info",
+            "get_pull_requests",
+        ],
     },
     "gitlab_client": {
         "supported": False,
         "actions": [],
-        "message": "GitLab integration is not yet implemented"
+        "message": "GitLab integration is not yet implemented",
     },
     "datadog_client": {
         "supported": False,
         "actions": [],
-        "message": "Datadog integration is not yet implemented"
+        "message": "Datadog integration is not yet implemented",
     },
     "pagerduty_client": {
         "supported": False,
         "actions": [],
-        "message": "PagerDuty integration is not yet implemented"
+        "message": "PagerDuty integration is not yet implemented",
     },
     "slack_client": {
         "supported": True,
-        "actions": ["post_message", "update_message", "post_interactive_message"]
-    }
+        "actions": ["post_message", "update_message", "post_interactive_message"],
+    },
 }
 
 
@@ -41,14 +45,14 @@ def validate_tool_support(tool: str, action: str = None) -> tuple[bool, str]:
     """
     if tool not in TOOL_SUPPORT:
         return False, f"Unknown tool: {tool}"
-    
+
     tool_info = TOOL_SUPPORT[tool]
     if not tool_info["supported"]:
         return False, tool_info.get("message", f"{tool} is not yet implemented")
-    
+
     if action and action not in tool_info.get("actions", []):
         return False, f"Action '{action}' is not supported for {tool}"
-    
+
     return True, ""
 
 
@@ -78,7 +82,7 @@ def create_plan(structured_query: dict) -> dict:
         tool = "github_client"
         action = "get_latest_pipeline_status"
         is_supported, error_msg = validate_tool_support(tool, action)
-        
+
         if not is_supported:
             logger.warning(f"Tool validation failed: {error_msg}")
             plan["steps"] = [
@@ -187,7 +191,7 @@ def analyze_context_and_suggest_fix(context: dict) -> dict:
 if __name__ == "__main__":
     # Example usage for testing
     logger.info("Testing planning agent functionality")
-    
+
     test_query = {
         "intent": "get_ci_cd_status",
         "entities": {"service_name": "checkout-service", "build_type": "latest"},
@@ -203,7 +207,9 @@ if __name__ == "__main__":
         "original_query": "Service payment-service is down, what happened?",
     }
     execution_plan_incident = create_plan(test_query_incident)
-    logger.info(f"Created incident plan: {json.dumps(execution_plan_incident, indent=2)}")
+    logger.info(
+        f"Created incident plan: {json.dumps(execution_plan_incident, indent=2)}"
+    )
 
     # Test analysis function
     mock_context = {

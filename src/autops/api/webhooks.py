@@ -29,14 +29,17 @@ def verify_slack_signature(request_body: bytes, timestamp: str, signature: str) 
     if abs(time.time() - float(timestamp)) > 60 * 5:
         # The request timestamp is more than five minutes old, could be a replay attack
         return False
-    
+
     sig_basestring = f"v0:{timestamp}:{request_body.decode('utf-8')}"
-    my_signature = 'v0=' + hmac.new(
-        settings.slack_signing_secret.encode('utf-8'),
-        sig_basestring.encode('utf-8'),
-        hashlib.sha256
-    ).hexdigest()
-    
+    my_signature = (
+        "v0="
+        + hmac.new(
+            settings.slack_signing_secret.encode("utf-8"),
+            sig_basestring.encode("utf-8"),
+            hashlib.sha256,
+        ).hexdigest()
+    )
+
     return hmac.compare_digest(my_signature, signature)
 
 
@@ -85,11 +88,11 @@ async def slack_events(request: Request, background_tasks: BackgroundTasks):
     body_bytes = await request.body()
     timestamp = request.headers.get("X-Slack-Request-Timestamp", "")
     signature = request.headers.get("X-Slack-Signature", "")
-    
+
     if not verify_slack_signature(body_bytes, timestamp, signature):
         logger.warning("Invalid Slack signature")
         raise HTTPException(status_code=401, detail="Invalid signature")
-    
+
     body = json.loads(body_bytes)
 
     if "challenge" in body:
@@ -114,26 +117,28 @@ async def slack_slash_command(
     text: Annotated[str, Form()] = "",
     channel_id: Annotated[str, Form()] = None,
     user_id: Annotated[str, Form()] = None,
-    background_tasks: BackgroundTasks = None
+    background_tasks: BackgroundTasks = None,
 ):
     """
     Handles Slack slash commands (e.g., /autops).
     """
-    logger.info(f"Slash command received: command={command}, text={text}, channel={channel_id}")
-    
+    logger.info(
+        f"Slash command received: command={command}, text={text}, channel={channel_id}"
+    )
+
     if not text.strip():
         return {
             "response_type": "ephemeral",
-            "text": "Please provide a query. Example: `/autops What's the status of the payment service?`"
+            "text": "Please provide a query. Example: `/autops What's the status of the payment service?`",
         }
-    
+
     # Acknowledge immediately with a processing message
     # Run the actual workflow in the background
     background_tasks.add_task(run_autops_workflow, text, channel_id)
-    
+
     return {
         "response_type": "in_channel",
-        "text": f"Processing your request: `{text}`\nI'll respond shortly..."
+        "text": f"Processing your request: `{text}`\nI'll respond shortly...",
     }
 
 
@@ -145,14 +150,14 @@ async def slack_interactive(payload: Annotated[str, Form()]):
     data = json.loads(payload)
     action_id = data["actions"][0]["action_id"]
     value = data["actions"][0]["value"]
-    
+
     logger.info(f"Interactive payload: action_id='{action_id}', value='{value}'")
-    
+
     # Get response URL for updating the message
     response_url = data.get("response_url")
     channel = data["channel"]["id"]
     user = data["user"]["id"]
-    
+
     if action_id.startswith("approve_"):
         # Execute the approved action
         logger.info(f"User {user} approved action: {value}")
@@ -162,24 +167,22 @@ async def slack_interactive(payload: Annotated[str, Form()]):
             # Execute the approved remediation action
             slack_client.post_message(
                 channel=channel,
-                text=f"🔄 Executing: {action_data.get('action', 'Unknown action')}..."
+                text=f"🔄 Executing: {action_data.get('action', 'Unknown action')}...",
             )
         except json.JSONDecodeError:
             logger.error(f"Failed to parse action value: {value}")
             slack_client.post_message(
-                channel=channel,
-                text="❌ Failed to parse the approved action."
+                channel=channel, text="❌ Failed to parse the approved action."
             )
         slack_client.post_message(
             channel=channel,
-            text=f"✅ Remediation approved by <@{user}>. Executing action..."
+            text=f"✅ Remediation approved by <@{user}>. Executing action...",
         )
     elif action_id.startswith("deny_"):
         logger.info(f"User {user} denied action: {value}")
         slack_client.post_message(
-            channel=channel,
-            text=f"❌ Remediation denied by <@{user}>."
+            channel=channel, text=f"❌ Remediation denied by <@{user}>."
         )
-    
+
     # Acknowledge the interaction
     return Response(status_code=200)

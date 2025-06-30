@@ -226,7 +226,7 @@ async def health_check():
     """Health check endpoint."""
     # Check database health
     db_health = db_manager.health_check()
-    
+
     return {
         "status": "healthy" if db_health["healthy"] else "unhealthy",
         "timestamp": time.time(),
@@ -328,7 +328,7 @@ async def run_orchestrator(plan: Dict[str, Any], channel: str) -> None:
             slack_client.post_message(
                 channel=channel,
                 text="I encountered an error while processing your request. "
-                     "Please try again later.",
+                "Please try again later.",
             )
         except Exception as slack_error:
             log_error(orchestrator_logger, slack_error, {"original_error": str(e)})
@@ -351,7 +351,7 @@ async def send_response(
             slack_client.post_message(
                 channel=channel,
                 text=f"I encountered an error while processing your request: "
-                     f"{error_message}",
+                f"{error_message}",
             )
         elif plan.get("intent") == "investigate_incident" and last_successful_output:
             # Send interactive incident response
@@ -377,7 +377,7 @@ async def send_response(
         slack_client.post_message(
             channel=channel,
             text="I completed processing your request but encountered an error "
-                 "generating the response.",
+            "generating the response.",
         )
 
 
