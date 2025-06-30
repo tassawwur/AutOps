@@ -16,7 +16,7 @@ python-dotenv = "^1.0.1"
 slack_sdk = "^3.27.0"
 PyGithub = "^2.2.0"
 datadog-api-client = "^2.22.0"
-pdpyras = "^4.6.0"
+pdpyras = "^4.0.0"
 python-gitlab = "^4.4.0"
 mcp = "^1.0.0"
 # Production dependencies
