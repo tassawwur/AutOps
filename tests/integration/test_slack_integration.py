@@ -2,10 +2,9 @@
 
 import pytest
 import json
-from unittest.mock import Mock, patch, AsyncMock
+from unittest.mock import Mock, patch
 from fastapi.testclient import TestClient
 from autops.main import app
-from autops.config import Settings
 
 
 class TestSlackIntegration:

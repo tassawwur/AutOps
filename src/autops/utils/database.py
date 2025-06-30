@@ -2,9 +2,8 @@
 Database utilities and models for AutOps.
 """
 import os
-import time
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any, Union
+from typing import Dict, List, Optional, Any
 from sqlalchemy import (
     create_engine,
     Column,
@@ -17,18 +16,15 @@ from sqlalchemy import (
     ForeignKey,
     Index,
     desc,
-    and_,
     or_,
 )
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session, relationship
-from sqlalchemy.exc import SQLAlchemyError
 from contextlib import contextmanager
 import structlog
 
 from ..config import settings
 from .exceptions import DatabaseError
-from .logging import log_error
 
 
 Base = declarative_base()
@@ -483,7 +479,7 @@ class KnowledgeBaseRepository:
     ) -> List[KnowledgeBase]:
         """Search knowledge base articles."""
         search_query = session.query(KnowledgeBase).filter(
-            KnowledgeBase.is_active == True
+            KnowledgeBase.is_active
         )
 
         # Simple text search (in production, use full-text search)

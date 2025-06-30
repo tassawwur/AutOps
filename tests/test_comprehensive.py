@@ -4,19 +4,16 @@ Comprehensive test suite for AutOps agents and tools.
 import pytest
 import asyncio
 from unittest.mock import Mock, patch, AsyncMock
-from typing import Dict, Any, List
 
 from src.autops.agents.query_understanding_agent import QueryUnderstandingAgent
 from src.autops.agents.planning_agent import create_plan
 from src.autops.agents.information_retrieval_agent import InformationRetrievalAgent
-from src.autops.agents.tool_execution_agent import execute_step
+from src.autops.agents.tool_execution_agent import ToolExecutionAgent
 from src.autops.agents.verification_agent import VerificationAgent
-from src.autops.agents.response_generation_agent import generate_response
 from src.autops.tools.slack_client import SlackClient
 from src.autops.utils.exceptions import (
     QueryUnderstandingError,
     ValidationError,
-    AgentExecutionError,
 )
 
 

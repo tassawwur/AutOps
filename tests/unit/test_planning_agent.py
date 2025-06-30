@@ -179,7 +179,7 @@ class TestPlanningAgent:
                 Mock(message=Mock(content=str(mock_llm_response)))
             ]
 
-            plan = await agent.create_plan(query, context)
+            await agent.create_plan(query, context)
 
             # Verify that the LLM was called with context
             call_args = mock_openai.ChatCompletion.acreate.call_args

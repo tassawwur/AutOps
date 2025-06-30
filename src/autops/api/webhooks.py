@@ -153,8 +153,6 @@ async def slack_interactive(payload: Annotated[str, Form()]):
 
     logger.info(f"Interactive payload: action_id='{action_id}', value='{value}'")
 
-    # Get response URL for updating the message
-    response_url = data.get("response_url")
     channel = data["channel"]["id"]
     user = data["user"]["id"]
 

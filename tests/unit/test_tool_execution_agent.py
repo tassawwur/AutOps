@@ -1,7 +1,7 @@
 """Tests for the Tool Execution Agent."""
 
 import pytest
-from unittest.mock import Mock, patch, AsyncMock
+from unittest.mock import Mock, patch
 from autops.agents.tool_execution_agent import ToolExecutionAgent
 from autops.utils.exceptions import ToolExecutionError, ValidationError
 

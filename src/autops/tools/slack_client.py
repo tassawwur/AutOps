@@ -1,6 +1,6 @@
 import json
 import time
-from typing import Dict, List, Optional, Any, Union
+from typing import Dict, List, Any, Union
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 from tenacity import (

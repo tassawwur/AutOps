@@ -1,12 +1,8 @@
 import time
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any, Union
+from typing import Dict, Any
 from github import Github, GithubException
 from github.Repository import Repository
-from github.Workflow import Workflow
-from github.WorkflowRun import WorkflowRun
-from github.PullRequest import PullRequest
-from github.Commit import Commit
 from tenacity import (
     retry,
     stop_after_attempt,
@@ -134,7 +130,7 @@ class GitHubClient:
                 workflow = None
                 try:
                     workflow = repo.get_workflow(latest_run.workflow_id)
-                except:
+                except Exception:
                     pass
 
                 pipeline_data["latest_run"] = {
