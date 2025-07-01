@@ -24,7 +24,9 @@ class Settings(BaseSettings):
 
     # Environment
     environment: Environment = Environment.DEVELOPMENT
+    app_env: str = "development"  # Alternative environment field for compatibility
     debug: bool = False
+    use_mock_data: bool = False  # Whether to use mock data for testing
 
     # Logging
     log_level: str = "INFO"
@@ -145,10 +147,12 @@ class Settings(BaseSettings):
 
     @validator("log_level")
     def validate_log_level(cls, v: str) -> str:
+        # Strip whitespace and remove comments
+        cleaned_value = v.strip().split('#')[0].strip() if isinstance(v, str) else str(v)
         valid_levels = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
-        if v.upper() not in valid_levels:
-            raise ConfigurationError(f"Invalid log level: {v}")
-        return v.upper()
+        if cleaned_value.upper() not in valid_levels:
+            raise ConfigurationError(f"Invalid log level: {cleaned_value}. Valid options: {valid_levels}")
+        return cleaned_value.upper()
 
     @validator("allowed_hosts", pre=True)
     def parse_allowed_hosts(cls, v: Any) -> list[str]:
