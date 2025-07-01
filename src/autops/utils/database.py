@@ -19,7 +19,7 @@ from sqlalchemy import (
     or_,
     Engine,
 )
-from sqlalchemy.ext.declarative import declarative_base, DeclarativeMeta
+from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session, relationship
 from contextlib import contextmanager
 import structlog
@@ -27,7 +27,8 @@ import structlog
 from ..config import settings
 
 
-Base: DeclarativeMeta = declarative_base()
+# Create the base class for SQLAlchemy models
+Base = declarative_base()
 logger = structlog.get_logger(__name__)
 
 
