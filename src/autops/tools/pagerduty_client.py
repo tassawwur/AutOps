@@ -1,6 +1,7 @@
 """
 PagerDuty API Client for incident management and on-call information.
 """
+
 import time
 from typing import Dict, List, Any, Optional
 from datetime import datetime, timedelta

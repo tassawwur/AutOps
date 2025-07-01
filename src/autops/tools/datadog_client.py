@@ -1,6 +1,7 @@
 """
 DataDog API Client for metrics and monitoring data retrieval.
 """
+
 import time
 from typing import Dict, Any, List, Optional
 from datetime import datetime, timedelta
@@ -322,9 +323,11 @@ class DatadogClient:
                         {
                             "id": event.id,
                             "title": event.title,
-                            "text": event.text[:200] + "..."
-                            if len(event.text) > 200
-                            else event.text,
+                            "text": (
+                                event.text[:200] + "..."
+                                if len(event.text) > 200
+                                else event.text
+                            ),
                             "date_happened": event.date_happened,
                             "priority": event.priority,
                             "tags": event.tags,

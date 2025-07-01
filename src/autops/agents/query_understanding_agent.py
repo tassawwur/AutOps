@@ -1,6 +1,7 @@
 """
 Query Understanding Agent with enhanced error handling and logging.
 """
+
 import json
 import time
 from typing import Dict, Any

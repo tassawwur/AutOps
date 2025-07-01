@@ -2,6 +2,7 @@
 DataDog MCP Server for AutOps integration.
 Provides tools for querying DataDog metrics and monitoring data.
 """
+
 import asyncio
 import json
 from typing import Any, Dict, List

@@ -11,7 +11,7 @@ client = openai.OpenAI(api_key=settings.openai_api_key)
 
 
 def generate_incident_remediation_message(
-    analysis_result: Dict[str, Any]
+    analysis_result: Dict[str, Any],
 ) -> List[Dict[str, Any]]:
     """
     Creates a Slack message with interactive buttons for remediation.

@@ -1,6 +1,7 @@
 """
 GitLab API Client for CI/CD pipeline information and repository data.
 """
+
 import time
 from typing import Dict, Any, Optional
 from datetime import datetime, timedelta
@@ -139,16 +140,18 @@ class GitLabClient:
                                 "status": latest_deployment.status,
                                 "created_at": latest_deployment.created_at,
                                 "updated_at": latest_deployment.updated_at,
-                                "environment": latest_deployment.environment.get(
-                                    "name", "Unknown"
-                                )
-                                if hasattr(latest_deployment, "environment")
-                                else "Unknown",
+                                "environment": (
+                                    latest_deployment.environment.get("name", "Unknown")
+                                    if hasattr(latest_deployment, "environment")
+                                    else "Unknown"
+                                ),
                                 "ref": latest_deployment.ref,
                                 "sha": latest_deployment.sha,
-                                "web_url": latest_deployment.web_url
-                                if hasattr(latest_deployment, "web_url")
-                                else None,
+                                "web_url": (
+                                    latest_deployment.web_url
+                                    if hasattr(latest_deployment, "web_url")
+                                    else None
+                                ),
                             },
                         }
                     )
@@ -160,9 +163,11 @@ class GitLabClient:
                             "id": commit.id,
                             "short_id": commit.short_id,
                             "title": commit.title,
-                            "message": commit.message[:200] + "..."
-                            if len(commit.message) > 200
-                            else commit.message,
+                            "message": (
+                                commit.message[:200] + "..."
+                                if len(commit.message) > 200
+                                else commit.message
+                            ),
                             "author_name": commit.author_name,
                             "author_email": commit.author_email,
                             "created_at": commit.created_at,
@@ -264,14 +269,16 @@ class GitLabClient:
                                 "web_url": latest_pipeline.web_url,
                                 "duration": latest_pipeline.duration,
                                 "user": {
-                                    "name": latest_pipeline.user.get("name", "Unknown")
-                                    if latest_pipeline.user
-                                    else "Unknown",
-                                    "username": latest_pipeline.user.get(
-                                        "username", "Unknown"
-                                    )
-                                    if latest_pipeline.user
-                                    else "Unknown",
+                                    "name": (
+                                        latest_pipeline.user.get("name", "Unknown")
+                                        if latest_pipeline.user
+                                        else "Unknown"
+                                    ),
+                                    "username": (
+                                        latest_pipeline.user.get("username", "Unknown")
+                                        if latest_pipeline.user
+                                        else "Unknown"
+                                    ),
                                 },
                             },
                         }
@@ -366,9 +373,11 @@ class GitLabClient:
                         "id": commit.id,
                         "short_id": commit.short_id,
                         "title": commit.title,
-                        "message": commit.message[:200] + "..."
-                        if len(commit.message) > 200
-                        else commit.message,
+                        "message": (
+                            commit.message[:200] + "..."
+                            if len(commit.message) > 200
+                            else commit.message
+                        ),
                         "author_name": commit.author_name,
                         "author_email": commit.author_email,
                         "created_at": commit.created_at,

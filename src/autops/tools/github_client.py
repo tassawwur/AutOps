@@ -144,12 +144,16 @@ class GitHubClient:
                     "status": latest_run.status,
                     "conclusion": latest_run.conclusion,
                     "url": latest_run.html_url,
-                    "created_at": latest_run.created_at.isoformat()
-                    if latest_run.created_at
-                    else None,
-                    "updated_at": latest_run.updated_at.isoformat()
-                    if latest_run.updated_at
-                    else None,
+                    "created_at": (
+                        latest_run.created_at.isoformat()
+                        if latest_run.created_at
+                        else None
+                    ),
+                    "updated_at": (
+                        latest_run.updated_at.isoformat()
+                        if latest_run.updated_at
+                        else None
+                    ),
                     "head_sha": latest_run.head_sha,
                     "head_branch": latest_run.head_branch,
                     "event": latest_run.event,
@@ -174,12 +178,14 @@ class GitHubClient:
                             "name": job.name,
                             "status": job.status,
                             "conclusion": job.conclusion,
-                            "started_at": job.started_at.isoformat()
-                            if job.started_at
-                            else None,
-                            "completed_at": job.completed_at.isoformat()
-                            if job.completed_at
-                            else None,
+                            "started_at": (
+                                job.started_at.isoformat() if job.started_at else None
+                            ),
+                            "completed_at": (
+                                job.completed_at.isoformat()
+                                if job.completed_at
+                                else None
+                            ),
                             "url": job.html_url,
                         }
                         pipeline_data["latest_run"]["jobs"].append(job_info)
@@ -293,16 +299,20 @@ class GitHubClient:
                     "author": {
                         "name": commit.commit.author.name,
                         "email": commit.commit.author.email,
-                        "date": commit.commit.author.date.isoformat()
-                        if commit.commit.author.date
-                        else None,
+                        "date": (
+                            commit.commit.author.date.isoformat()
+                            if commit.commit.author.date
+                            else None
+                        ),
                     },
                     "committer": {
                         "name": commit.commit.committer.name,
                         "email": commit.commit.committer.email,
-                        "date": commit.commit.committer.date.isoformat()
-                        if commit.commit.committer.date
-                        else None,
+                        "date": (
+                            commit.commit.committer.date.isoformat()
+                            if commit.commit.committer.date
+                            else None
+                        ),
                     },
                     "url": commit.html_url,
                     "stats": {
@@ -498,9 +508,9 @@ class GitHubClient:
                 "has_downloads": repo.has_downloads,
                 "archived": repo.archived,
                 "disabled": repo.disabled,
-                "visibility": repo.visibility
-                if hasattr(repo, "visibility")
-                else "public",
+                "visibility": (
+                    repo.visibility if hasattr(repo, "visibility") else "public"
+                ),
             }
 
             # Get languages
@@ -510,9 +520,11 @@ class GitHubClient:
                 repo_data["languages"] = {
                     lang: {
                         "bytes": bytes_count,
-                        "percentage": round((bytes_count / total_bytes) * 100, 2)
-                        if total_bytes > 0
-                        else 0,
+                        "percentage": (
+                            round((bytes_count / total_bytes) * 100, 2)
+                            if total_bytes > 0
+                            else 0
+                        ),
                     }
                     for lang, bytes_count in languages.items()
                 }
@@ -524,9 +536,11 @@ class GitHubClient:
                 recent_commits = list(repo.get_commits()[:10])
                 repo_data["recent_activity"] = {
                     "recent_commits_count": len(recent_commits),
-                    "last_commit_date": recent_commits[0].commit.author.date.isoformat()
-                    if recent_commits and recent_commits[0].commit.author.date
-                    else None,
+                    "last_commit_date": (
+                        recent_commits[0].commit.author.date.isoformat()
+                        if recent_commits and recent_commits[0].commit.author.date
+                        else None
+                    ),
                 }
             except Exception as e:
                 self.logger.warning("Failed to fetch recent activity", error=str(e))
@@ -559,16 +573,20 @@ class GitHubClient:
                 "core": {
                     "limit": rate_limit.core.limit,
                     "remaining": rate_limit.core.remaining,
-                    "reset": rate_limit.core.reset.isoformat()
-                    if rate_limit.core.reset
-                    else None,
+                    "reset": (
+                        rate_limit.core.reset.isoformat()
+                        if rate_limit.core.reset
+                        else None
+                    ),
                 },
                 "search": {
                     "limit": rate_limit.search.limit,
                     "remaining": rate_limit.search.remaining,
-                    "reset": rate_limit.search.reset.isoformat()
-                    if rate_limit.search.reset
-                    else None,
+                    "reset": (
+                        rate_limit.search.reset.isoformat()
+                        if rate_limit.search.reset
+                        else None
+                    ),
                 },
             }
         except Exception as e:

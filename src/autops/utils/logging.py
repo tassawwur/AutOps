@@ -1,6 +1,7 @@
 """
 Structured logging configuration for AutOps.
 """
+
 import logging
 import sys
 from typing import Any, Dict, Optional
@@ -31,9 +32,11 @@ def configure_logging(level: str = "INFO", json_logs: bool = True) -> None:
             structlog.processors.StackInfoRenderer(),
             structlog.processors.format_exc_info,
             structlog.processors.UnicodeDecoder(),
-            structlog.processors.JSONRenderer()
-            if json_logs
-            else structlog.dev.ConsoleRenderer(),
+            (
+                structlog.processors.JSONRenderer()
+                if json_logs
+                else structlog.dev.ConsoleRenderer()
+            ),
         ],
         context_class=dict,
         logger_factory=stdlib.LoggerFactory(),
