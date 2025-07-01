@@ -350,7 +350,6 @@ async def run_datadog_server() -> None:
 # Entry point
 async def main() -> None:
     """Main entry point for the DataDog MCP server."""
-    server = DataDogMCPServer()
     await run_datadog_server()
 
 
