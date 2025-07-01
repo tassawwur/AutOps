@@ -1,5 +1,6 @@
 import json
 import openai
+from typing import Dict, Any, Optional, Tuple
 from ..config import settings
 from ..utils.logging import get_logger
 
@@ -38,7 +39,7 @@ TOOL_SUPPORT = {
 }
 
 
-def validate_tool_support(tool: str, action: str = None) -> tuple[bool, str]:
+def validate_tool_support(tool: str, action: Optional[str] = None) -> Tuple[bool, str]:
     """
     Validates if a tool and action are supported.
     Returns (is_supported, error_message)
@@ -56,7 +57,7 @@ def validate_tool_support(tool: str, action: str = None) -> tuple[bool, str]:
     return True, ""
 
 
-def create_plan(structured_query: dict) -> dict:
+def create_plan(structured_query: Dict[str, Any]) -> Dict[str, Any]:
     """
     Creates a basic execution plan based on the structured query's intent.
     """
@@ -143,7 +144,7 @@ def create_plan(structured_query: dict) -> dict:
     return plan
 
 
-def analyze_context_and_suggest_fix(context: dict) -> dict:
+def analyze_context_and_suggest_fix(context: Dict[str, Any]) -> Dict[str, Any]:
     """
     Uses an LLM to analyze incident context and suggest a fix.
     """
@@ -198,28 +199,5 @@ if __name__ == "__main__":
         "original_query": "Is the latest build passing for the checkout-service?",
     }
 
-    execution_plan = create_plan(test_query)
-    logger.info(f"Created plan: {json.dumps(execution_plan, indent=2)}")
-
-    test_query_incident = {
-        "intent": "investigate_incident",
-        "entities": {"service_name": "payment-service"},
-        "original_query": "Service payment-service is down, what happened?",
-    }
-    execution_plan_incident = create_plan(test_query_incident)
-    logger.info(
-        f"Created incident plan: {json.dumps(execution_plan_incident, indent=2)}"
-    )
-
-    # Test analysis function
-    mock_context = {
-        "metrics": {"service": "payment-service", "error_rate": "5.2%"},
-        "incidents": {"service": "payment-service", "incidents": []},
-        "deployment": {
-            "service": "payment-service",
-            "deployment": "deploy-123",
-            "commit": "a1b2c3d",
-        },
-    }
-    analysis = analyze_context_and_suggest_fix(mock_context)
-    logger.info(f"Analysis result: {json.dumps(analysis, indent=2)}")
+    result = create_plan(test_query)
+    print(json.dumps(result, indent=2))

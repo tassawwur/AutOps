@@ -1,291 +1,351 @@
 """
-DataDog MCP Server implementation for providing DataDog monitoring capabilities
-via the Model Context Protocol.
+DataDog MCP Server for AutOps integration.
+Provides tools for querying DataDog metrics and monitoring data.
 """
 import asyncio
 import json
 from typing import Any, Dict, List
 
-from mcp.server import Server
-from mcp.server.models import InitializationOptions
-from mcp.server.stdio import stdio_server
-from mcp.types import (
-    Resource,
-    Tool,
-    TextContent,
-)
+from mcp.server.fastmcp import FastMCP
+from mcp.server.models import Tool
+from mcp.types import Resource, TextContent
 
-from ..tools.datadog_client import datadog_client
+from ..tools.datadog_client import get_datadog_client
+from ..config import get_settings
 from ..utils.logging import get_logger, log_error
 from ..utils.exceptions import DatadogAPIError, ValidationError
 
+# Initialize components
+settings = get_settings()
 logger = get_logger(__name__)
+datadog_client = get_datadog_client()
+
+# Create MCP server
+mcp = FastMCP("AutOps DataDog Server")
 
 
-class DatadogMCPServer:
-    """
-    DataDog MCP Server that exposes DataDog monitoring capabilities
-    through the Model Context Protocol.
-    """
+class DataDogMCPServer:
+    """DataDog MCP Server implementation."""
 
-    def __init__(self):
-        self.server = Server("datadog-mcp-server")
-        self.logger = get_logger(f"{__name__}.DatadogMCPServer")
+    def __init__(self) -> None:
+        self.client = datadog_client
+        self.logger = logger
         self._setup_handlers()
 
-    def _setup_handlers(self):
-        """Set up MCP server handlers."""
+    def _setup_handlers(self) -> None:
+        """Set up all MCP handlers for DataDog tools."""
 
-        @self.server.list_tools()
-        async def handle_list_tools() -> List[Tool]:
-            """Return list of available DataDog tools."""
-            return [
-                Tool(
-                    name="get_error_rate_metrics",
-                    description="Get error rate metrics for a service from DataDog",
-                    inputSchema={
-                        "type": "object",
-                        "properties": {
-                            "service_name": {
-                                "type": "string",
-                                "description": "Name of the service to get metrics for",
-                            },
-                            "time_window_minutes": {
-                                "type": "integer",
-                                "description": "Time window in minutes (default: 60)",
-                                "default": 60,
-                                "minimum": 5,
-                                "maximum": 1440,
-                            },
-                        },
-                        "required": ["service_name"],
-                    },
-                ),
-                Tool(
-                    name="get_service_metrics",
-                    description="Get comprehensive service metrics from DataDog",
-                    inputSchema={
-                        "type": "object",
-                        "properties": {
-                            "service_name": {
-                                "type": "string",
-                                "description": "Name of the service to get metrics for",
-                            },
-                            "metrics": {
-                                "type": "array",
-                                "items": {"type": "string"},
-                                "description": "List of specific metrics to fetch (optional)",
-                            },
-                            "time_window_minutes": {
-                                "type": "integer",
-                                "description": "Time window in minutes (default: 60)",
-                                "default": 60,
-                                "minimum": 5,
-                                "maximum": 1440,
-                            },
-                        },
-                        "required": ["service_name"],
-                    },
-                ),
-                Tool(
-                    name="get_recent_events",
-                    description="Get recent events related to a service from DataDog",
-                    inputSchema={
-                        "type": "object",
-                        "properties": {
-                            "service_name": {
-                                "type": "string",
-                                "description": "Name of the service to get events for",
-                            },
-                            "hours": {
-                                "type": "integer",
-                                "description": "Number of hours to look back (default: 24)",
-                                "default": 24,
-                                "minimum": 1,
-                                "maximum": 168,
-                            },
-                        },
-                        "required": ["service_name"],
-                    },
-                ),
-                Tool(
-                    name="get_monitor_status",
-                    description="Get monitor status for a service from DataDog",
-                    inputSchema={
-                        "type": "object",
-                        "properties": {
-                            "service_name": {
-                                "type": "string",
-                                "description": "Name of the service to get monitor status for",
-                            }
-                        },
-                        "required": ["service_name"],
-                    },
-                ),
-            ]
-
-        @self.server.call_tool()
-        async def handle_call_tool(
-            name: str, arguments: Dict[str, Any]
+        @mcp.tool("datadog_error_rate")
+        async def handle_error_rate_metrics(
+            service_name: str, time_window_minutes: int = 60
         ) -> List[TextContent]:
-            """Handle tool calls."""
+            """
+            Get error rate metrics for a service from DataDog.
+
+            Args:
+                service_name: Name of the service to check
+                time_window_minutes: Time window in minutes for metrics (default: 60)
+
+            Returns:
+                Error rate metrics and analysis
+            """
             try:
-                self.logger.info("MCP tool called", tool=name, args=arguments)
-
-                if name == "get_error_rate_metrics":
-                    service_name = arguments["service_name"]
-                    time_window = arguments.get("time_window_minutes", 60)
-
-                    result = datadog_client.get_error_rate_metrics(
-                        service_name=service_name, time_window_minutes=time_window
-                    )
-
-                    return [TextContent(type="text", text=json.dumps(result, indent=2))]
-
-                elif name == "get_service_metrics":
-                    service_name = arguments["service_name"]
-                    metrics = arguments.get("metrics")
-                    time_window = arguments.get("time_window_minutes", 60)
-
-                    result = datadog_client.get_service_metrics(
-                        service_name=service_name,
-                        metrics=metrics,
-                        time_window_minutes=time_window,
-                    )
-
-                    return [TextContent(type="text", text=json.dumps(result, indent=2))]
-
-                elif name == "get_recent_events":
-                    service_name = arguments["service_name"]
-                    hours = arguments.get("hours", 24)
-
-                    result = datadog_client.get_recent_events(
-                        service_name=service_name, hours=hours
-                    )
-
-                    return [TextContent(type="text", text=json.dumps(result, indent=2))]
-
-                elif name == "get_monitor_status":
-                    service_name = arguments["service_name"]
-
-                    result = datadog_client.get_monitor_status(
-                        service_name=service_name
-                    )
-
-                    return [TextContent(type="text", text=json.dumps(result, indent=2))]
-
-                else:
-                    error_msg = f"Unknown tool: {name}"
-                    self.logger.error(error_msg)
-                    return [
-                        TextContent(type="text", text=json.dumps({"error": error_msg}))
-                    ]
-
-            except ValidationError as e:
-                error_msg = f"Validation error: {str(e)}"
-                self.logger.error(error_msg, tool=name, args=arguments)
-                return [TextContent(type="text", text=json.dumps({"error": error_msg}))]
-
-            except DatadogAPIError as e:
-                error_msg = f"DataDog API error: {str(e)}"
-                self.logger.error(error_msg, tool=name, args=arguments)
-                return [TextContent(type="text", text=json.dumps({"error": error_msg}))]
-
-            except Exception as e:
-                error_msg = f"Unexpected error: {str(e)}"
-                log_error(self.logger, e, {"tool": name, "args": arguments})
-                return [TextContent(type="text", text=json.dumps({"error": error_msg}))]
-
-        @self.server.list_resources()
-        async def handle_list_resources() -> List[Resource]:
-            """Return list of available resources."""
-            return [
-                Resource(
-                    uri="datadog://services",
-                    name="DataDog Services",
-                    description="List of services monitored by DataDog",
-                    mimeType="application/json",
-                ),
-                Resource(
-                    uri="datadog://metrics",
-                    name="DataDog Metrics",
-                    description="Available DataDog metrics",
-                    mimeType="application/json",
-                ),
-            ]
-
-        @self.server.read_resource()
-        async def handle_read_resource(uri: str) -> str:
-            """Handle resource reading."""
-            try:
-                if uri == "datadog://services":
-                    # This would typically fetch from DataDog API
-                    services_info = {
-                        "description": "DataDog monitored services",
-                        "services": [
-                            "payment-service",
-                            "user-service",
-                            "notification-service",
-                            "api-gateway",
-                        ],
-                        "note": "This is a sample list. Actual services would be fetched from DataDog API.",
-                    }
-                    return json.dumps(services_info, indent=2)
-
-                elif uri == "datadog://metrics":
-                    metrics_info = {
-                        "description": "Available DataDog metrics",
-                        "common_metrics": [
-                            "trace.http.request.duration.95p",
-                            "trace.http.request.errors",
-                            "system.cpu.user",
-                            "system.mem.used",
-                            "redis.info.memory.used_memory",
-                            "postgres.connections",
-                        ],
-                        "note": "These are common metrics. Specific metrics depend on your DataDog setup.",
-                    }
-                    return json.dumps(metrics_info, indent=2)
-
-                else:
-                    raise ValueError(f"Unknown resource URI: {uri}")
-
-            except Exception as e:
-                error_msg = f"Error reading resource {uri}: {str(e)}"
-                self.logger.error(error_msg)
-                return json.dumps({"error": error_msg})
-
-    async def run(self):
-        """Run the MCP server."""
-        try:
-            self.logger.info("Starting DataDog MCP server")
-
-            async with stdio_server() as (read_stream, write_stream):
-                await self.server.run(
-                    read_stream,
-                    write_stream,
-                    InitializationOptions(
-                        server_name="datadog-mcp-server",
-                        server_version="1.0.0",
-                        capabilities=self.server.get_capabilities(
-                            notification_options=None, experimental_capabilities={}
-                        ),
-                    ),
+                self.logger.info(f"Fetching error rate for service: {service_name}")
+                metrics = self.client.get_error_rate_metrics(
+                    service_name, time_window_minutes
                 )
-        except Exception as e:
-            log_error(self.logger, e, {"operation": "run_mcp_server"})
-            raise
+
+                response = f"""
+**Error Rate Metrics for {service_name}**
+
+Current Error Rate: {metrics.get('error_rate', 'N/A')}
+Time Window: {time_window_minutes} minutes
+Data Points: {metrics.get('data_points', 'N/A')}
+Max Error Rate: {metrics.get('max_error_rate', 'N/A')}
+Min Error Rate: {metrics.get('min_error_rate', 'N/A')}
+
+Status: {'✅ Normal' if float(metrics.get('error_rate', '0').rstrip('%')) < 5 else '⚠️ Elevated'}
+                """.strip()
+
+                return [TextContent(type="text", text=response)]
+
+            except Exception as e:
+                self.logger.error(f"Error fetching metrics: {e}")
+                return [
+                    TextContent(
+                        type="text",
+                        text=f"Error fetching error rate metrics: {str(e)}",
+                    )
+                ]
+
+        @mcp.tool("datadog_service_metrics")
+        async def handle_service_metrics(
+            service_name: str,
+            metrics: List[str] = None,
+            time_window_minutes: int = 60,
+        ) -> List[TextContent]:
+            """
+            Get comprehensive service metrics from DataDog.
+
+            Args:
+                service_name: Name of the service to check
+                metrics: List of specific metrics to fetch (optional)
+                time_window_minutes: Time window in minutes (default: 60)
+
+            Returns:
+                Comprehensive service metrics
+            """
+            try:
+                self.logger.info(f"Fetching service metrics for: {service_name}")
+                service_metrics = self.client.get_service_metrics(
+                    service_name, metrics, time_window_minutes
+                )
+
+                response = f"""
+**Service Metrics for {service_name}**
+
+Time Window: {time_window_minutes} minutes
+Metrics Retrieved: {len(service_metrics.get('metrics', {}))}
+
+Key Metrics:
+{self._format_metrics(service_metrics.get('metrics', {}))}
+
+Health Status: {service_metrics.get('health_status', 'Unknown')}
+                """.strip()
+
+                return [TextContent(type="text", text=response)]
+
+            except Exception as e:
+                self.logger.error(f"Error fetching service metrics: {e}")
+                return [
+                    TextContent(
+                        type="text",
+                        text=f"Error fetching service metrics: {str(e)}",
+                    )
+                ]
+
+        @mcp.tool("datadog_recent_events")
+        async def handle_recent_events(
+            service_name: str, hours: int = 24
+        ) -> List[TextContent]:
+            """
+            Get recent events for a service from DataDog.
+
+            Args:
+                service_name: Name of the service to check
+                hours: Number of hours to look back (default: 24)
+
+            Returns:
+                Recent events and alerts
+            """
+            try:
+                self.logger.info(f"Fetching recent events for: {service_name}")
+                events = self.client.get_recent_events(service_name, hours)
+
+                response = f"""
+**Recent Events for {service_name}**
+
+Time Range: Last {hours} hours
+Total Events: {events.get('total_events', 0)}
+
+Recent Events:
+{self._format_events(events.get('events', []))}
+                """.strip()
+
+                return [TextContent(type="text", text=response)]
+
+            except Exception as e:
+                self.logger.error(f"Error fetching events: {e}")
+                return [
+                    TextContent(
+                        type="text", text=f"Error fetching recent events: {str(e)}"
+                    )
+                ]
+
+    async def handle_call_tool(
+        self, name: str, arguments: Dict[str, Any]
+    ) -> List[TextContent]:
+        """Handle tool calls from MCP clients."""
+        self.logger.info(f"Handling tool call: {name} with args: {arguments}")
+
+        # Tool calls are handled by the @mcp.tool decorators above
+        # This method is kept for compatibility
+        return [
+            TextContent(
+                type="text", text=f"Tool {name} called with arguments: {arguments}"
+            )
+        ]
+
+    def _format_metrics(self, metrics: Dict[str, Any]) -> str:
+        """Format metrics for display."""
+        if not metrics:
+            return "No metrics available"
+
+        formatted = []
+        for metric_name, value in metrics.items():
+            formatted.append(f"  • {metric_name}: {value}")
+
+        return "\n".join(formatted)
+
+    def _format_events(self, events: List[Dict[str, Any]]) -> str:
+        """Format events for display."""
+        if not events:
+            return "No recent events"
+
+        formatted = []
+        for event in events[:5]:  # Show top 5 events
+            timestamp = event.get("timestamp", "N/A")
+            title = event.get("title", "No title")
+            status = event.get("status", "unknown")
+            formatted.append(f"  • [{timestamp}] {title} (Status: {status})")
+
+        return "\n".join(formatted)
 
 
 # Global server instance
-datadog_mcp_server = DatadogMCPServer()
+datadog_server = DataDogMCPServer()
 
 
-async def main():
+# MCP Handler Registration
+@mcp.list_tools()
+async def handle_list_tools() -> List[Tool]:
+    """Return list of available DataDog tools."""
+    return [
+        Tool(
+            name="datadog_error_rate",
+            description="Get error rate metrics for a service from DataDog",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "service_name": {
+                        "type": "string",
+                        "description": "Name of the service to check",
+                    },
+                    "time_window_minutes": {
+                        "type": "integer",
+                        "description": "Time window in minutes (default: 60)",
+                        "default": 60,
+                    },
+                },
+                "required": ["service_name"],
+            },
+        ),
+        Tool(
+            name="datadog_service_metrics",
+            description="Get comprehensive service metrics from DataDog",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "service_name": {
+                        "type": "string",
+                        "description": "Name of the service to check",
+                    },
+                    "metrics": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "List of specific metrics to fetch (optional)",
+                    },
+                    "time_window_minutes": {
+                        "type": "integer",
+                        "description": "Time window in minutes (default: 60)",
+                        "default": 60,
+                    },
+                },
+                "required": ["service_name"],
+            },
+        ),
+        Tool(
+            name="datadog_recent_events",
+            description="Get recent events for a service from DataDog",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "service_name": {
+                        "type": "string",
+                        "description": "Name of the service to check",
+                    },
+                    "hours": {
+                        "type": "integer",
+                        "description": "Number of hours to look back (default: 24)",
+                        "default": 24,
+                    },
+                },
+                "required": ["service_name"],
+            },
+        ),
+    ]
+
+
+@mcp.list_resources()
+async def handle_list_resources() -> List[Resource]:
+    """Return list of available resources."""
+    return [
+        Resource(
+            uri="datadog://services",
+            name="DataDog Services",
+            description="List of services monitored by DataDog",
+            mimeType="application/json",
+        ),
+        Resource(
+            uri="datadog://dashboards",
+            name="DataDog Dashboards",
+            description="Available DataDog dashboards",
+            mimeType="application/json",
+        ),
+    ]
+
+
+@mcp.read_resource()
+async def handle_read_resource(uri: str) -> str:
+    """Handle resource reading requests."""
+    if uri == "datadog://services":
+        # Return mock service list - in production, this would query DataDog API
+        services = {
+            "services": [
+                "payment-service",
+                "user-auth-service", 
+                "notification-service",
+                "order-processing-service",
+            ],
+            "total": 4,
+            "note": "This is a sample list. Actual services would be fetched from DataDog API.",
+        }
+        return str(services)
+
+    elif uri == "datadog://dashboards":
+        # Return mock dashboard list
+        dashboards = {
+            "dashboards": [
+                {"id": "dashboard-1", "name": "Service Overview", "url": "https://app.datadoghq.com/dashboard/abc-123"},
+                {"id": "dashboard-2", "name": "Infrastructure Metrics", "url": "https://app.datadoghq.com/dashboard/def-456"},
+            ],
+            "total": 2,
+        }
+        return str(dashboards)
+
+    else:
+        return f"Resource not found: {uri}"
+
+
+# Server management
+async def run(self) -> None:
+    """Run the DataDog MCP server."""
+    logger.info("Starting DataDog MCP Server")
+    try:
+        await mcp.run()
+    except KeyboardInterrupt:
+        logger.info("DataDog MCP Server stopped by user")
+    except Exception as e:
+        logger.error(f"DataDog MCP Server error: {e}")
+        raise
+
+
+# Entry point
+async def main() -> None:
     """Main entry point for the DataDog MCP server."""
-    await datadog_mcp_server.run()
+    server = DataDogMCPServer()
+    await server.run()
 
 
 if __name__ == "__main__":
-    # Run the server
     asyncio.run(main())

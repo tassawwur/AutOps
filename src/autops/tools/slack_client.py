@@ -1,6 +1,6 @@
 import json
 import time
-from typing import Dict, List, Any, Union
+from typing import Dict, List, Any, Union, Optional
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 from tenacity import (
@@ -19,7 +19,7 @@ from ..utils.logging import log_error, log_agent_execution
 class SlackClient:
     """Production-ready Slack client with comprehensive error handling and retry logic."""
 
-    def __init__(self, token: str = None):
+    def __init__(self, token: Optional[str] = None) -> None:
         """
         Initialize Slack client.
 
@@ -70,9 +70,9 @@ class SlackClient:
     def post_message(
         self,
         channel: str,
-        text: str = None,
-        blocks: List[Dict] = None,
-        thread_ts: str = None,
+        text: Optional[str] = None,
+        blocks: Optional[List[Dict[str, Any]]] = None,
+        thread_ts: Optional[str] = None,
         unfurl_links: bool = True,
         unfurl_media: bool = True,
     ) -> Dict[str, Any]:
@@ -119,7 +119,7 @@ class SlackClient:
             if thread_ts:
                 kwargs["thread_ts"] = thread_ts
 
-            response = self.client.chat_postMessage(**kwargs)
+            response = self.client.chat_postMessage(**kwargs)  # type: ignore[arg-type]
 
             # Log execution
             duration_ms = (time.time() - start_time) * 1000
@@ -132,7 +132,7 @@ class SlackClient:
                 message_ts=response.get("ts"),
             )
 
-            return response.data
+            return dict(response.data)  # type: ignore[arg-type]
 
         except SlackApiError as e:
             self.logger.warning("Slack API error, retrying", error=str(e))
@@ -150,8 +150,8 @@ class SlackClient:
         self,
         channel: str,
         text: str,
-        actions: List[Dict],
-        callback_id: str = None,
+        actions: List[Dict[str, Any]],
+        callback_id: Optional[str] = None,
         color: str = "good",
     ) -> Dict[str, Any]:
         """
@@ -180,7 +180,7 @@ class SlackClient:
                 if callback_id:
                     action_block["block_id"] = callback_id
 
-                blocks.append(action_block)
+                blocks.append(action_block)  # type: ignore[arg-type]
 
             self.logger.info(
                 "Posting interactive message to Slack",
@@ -214,7 +214,7 @@ class SlackClient:
         retry=retry_if_exception_type(SlackApiError),
     )
     def update_message(
-        self, channel: str, ts: str, text: str = None, blocks: List[Dict] = None
+        self, channel: str, ts: str, text: Optional[str] = None, blocks: Optional[List[Dict[str, Any]]] = None
     ) -> Dict[str, Any]:
         """
         Update an existing message.
@@ -280,7 +280,7 @@ class SlackClient:
         action_id: str,
         approve_text: str = "Approve",
         deny_text: str = "Deny",
-    ) -> List[Dict]:
+    ) -> List[Dict[str, Any]]:
         """
         Create standard approval message blocks.
 
@@ -323,7 +323,7 @@ class SlackClient:
 
     def create_status_blocks(
         self, title: str, status: str, details: Dict[str, Any], color: str = "good"
-    ) -> List[Dict]:
+    ) -> List[Dict[str, Any]]:
         """
         Create standard status message blocks.
 
@@ -362,15 +362,15 @@ class SlackClient:
 class MockSlackClient:
     """Mock Slack client for testing and development."""
 
-    def __init__(self, token: str = None):
+    def __init__(self, token: Optional[str] = None) -> None:
         self.logger = structlog.get_logger(__name__)
         self.bot_id = "mock_bot_id"
         self.team_id = "mock_team_id"
         self.logger.info("Mock Slack client initialized")
 
     def post_message(
-        self, channel: str, text: str = None, blocks: List[Dict] = None, **kwargs
-    ):
+        self, channel: str, text: Optional[str] = None, blocks: Optional[List[Dict[str, Any]]] = None, **kwargs: Any
+    ) -> Dict[str, Any]:
         """Mock posting a message to Slack."""
         print("\n" + "=" * 50)
         print(f"SLACK MESSAGE TO CHANNEL: {channel}")
@@ -383,20 +383,20 @@ class MockSlackClient:
         return {"ok": True, "ts": "1234567890.123456", "channel": channel}
 
     def post_interactive_message(
-        self, channel: str, text: str, actions: List[Dict], **kwargs
-    ):
+        self, channel: str, text: str, actions: List[Dict[str, Any]], **kwargs: Any
+    ) -> Dict[str, Any]:
         """Mock posting an interactive message."""
         return self.post_message(channel, text, actions)
 
     def update_message(
-        self, channel: str, ts: str, text: str = None, blocks: List[Dict] = None
-    ):
+        self, channel: str, ts: str, text: Optional[str] = None, blocks: Optional[List[Dict[str, Any]]] = None
+    ) -> Dict[str, Any]:
         """Mock updating a message."""
         return self.post_message(channel, text, blocks)
 
     def create_approval_blocks(
-        self, title: str, description: str, action_id: str, **kwargs
-    ):
+        self, title: str, description: str, action_id: str, **kwargs: Any
+    ) -> List[Dict[str, Any]]:
         """Mock creating approval blocks."""
         return [
             {
@@ -406,8 +406,8 @@ class MockSlackClient:
         ]
 
     def create_status_blocks(
-        self, title: str, status: str, details: Dict[str, Any], **kwargs
-    ):
+        self, title: str, status: str, details: Dict[str, Any], **kwargs: Any
+    ) -> List[Dict[str, Any]]:
         """Mock creating status blocks."""
         return [
             {

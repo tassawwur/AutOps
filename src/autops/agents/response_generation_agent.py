@@ -1,11 +1,16 @@
 import openai
 import json
 from ..config import settings
+from typing import Dict, List, Any, Optional
+import logging
+from openai import OpenAI
+
+logger = logging.getLogger(__name__)
 
 client = openai.OpenAI(api_key=settings.openai_api_key)
 
 
-def generate_incident_remediation_message(analysis_result: dict) -> list:
+def generate_incident_remediation_message(analysis_result: Dict[str, Any]) -> List[Dict[str, Any]]:
     """
     Creates a Slack message with interactive buttons for remediation.
     """
@@ -49,15 +54,17 @@ def generate_incident_remediation_message(analysis_result: dict) -> list:
     ]
 
 
-def generate_response(original_query: str, execution_result: dict) -> str:
+def generate_response(query: str, verification_results: Dict[str, Any], 
+                     tool_execution_results: Optional[List[Dict[str, Any]]] = None,
+                     include_metrics: bool = True) -> Optional[str]:
     """
     Uses an LLM to generate a natural language response based on the
     execution result.
     """
 
     # Check for errors first
-    if execution_result.get("status") == "failed":
-        error = execution_result.get("error", "An unknown error occurred.")
+    if verification_results.get("status") == "failed":
+        error = verification_results.get("error", "An unknown error occurred.")
         return f"I'm sorry, I couldn't complete your request. Reason: {error}"
 
     system_prompt = """
@@ -69,9 +76,9 @@ def generate_response(original_query: str, execution_result: dict) -> str:
 
     # We build a user message for the LLM that contains the original query
     # and the result data.
-    result_data = json.dumps(execution_result.get("result", {}))
+    result_data = json.dumps(verification_results.get("result", {}))
     user_prompt = f"""
-    The user asked: '{original_query}'
+    The user asked: '{query}'
 
     The data I retrieved is:
     {result_data}

@@ -1,5 +1,6 @@
 import json
 import os
+from typing import Dict, Any
 from ..utils.logging import get_logger
 
 logger = get_logger(__name__)
@@ -10,7 +11,7 @@ USE_MOCK_DATA = os.getenv("USE_MOCK_DATA", "false").lower() == "true"
 
 # Mock clients for demo purposes
 class MockDatadogClient:
-    def get_error_rate_metrics(self, service_name: str) -> dict:
+    def get_error_rate_metrics(self, service_name: str) -> Dict[str, Any]:
         logger.info(f"MOCK: Fetching error rates for '{service_name}' from Datadog.")
         return {
             "service": service_name,
@@ -24,7 +25,7 @@ class MockDatadogClient:
 
 
 class MockPagerDutyClient:
-    def get_active_incidents(self, service_name: str) -> dict:
+    def get_active_incidents(self, service_name: str) -> Dict[str, Any]:
         logger.info(
             f"MOCK: Fetching active incidents for '{service_name}' from PagerDuty."
         )
@@ -46,7 +47,7 @@ class MockPagerDutyClient:
 
 
 class MockGitLabClient:
-    def get_last_deployment(self, service_name: str) -> dict:
+    def get_last_deployment(self, service_name: str) -> Dict[str, Any]:
         logger.info(f"MOCK: Fetching last deployment for '{service_name}' from GitLab.")
         return {
             "service": service_name,
@@ -82,12 +83,12 @@ else:
 
 # Agent class
 class InformationRetrievalAgent:
-    def __init__(self):
+    def __init__(self) -> None:
         self.datadog_client = datadog_client
         self.pagerduty_client = pagerduty_client
         self.gitlab_client = gitlab_client
 
-    def gather_context(self, service_name: str) -> dict:
+    def gather_context(self, service_name: str) -> Dict[str, Any]:
         """
         Gathers context about a service from various tools.
         """

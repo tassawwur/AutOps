@@ -1,6 +1,6 @@
 import time
 from datetime import datetime, timedelta
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 from github import Github, GithubException
 from github.Repository import Repository
 from tenacity import (
@@ -10,6 +10,9 @@ from tenacity import (
     retry_if_exception_type,
 )
 import structlog
+import json
+import logging
+import github
 
 from ..config import settings
 from ..utils.exceptions import GitHubAPIError, ValidationError
@@ -19,7 +22,7 @@ from ..utils.logging import log_error, log_agent_execution
 class GitHubClient:
     """Production-ready GitHub client with comprehensive functionality."""
 
-    def __init__(self, token: str = None, owner: str = None):
+    def __init__(self, token: Optional[str] = None, owner: Optional[str] = None) -> None:
         """
         Initialize GitHub client.
 
@@ -79,7 +82,7 @@ class GitHubClient:
         retry=retry_if_exception_type(GithubException),
     )
     def get_latest_pipeline_status(
-        self, repo_name: str, branch: str = None
+        self, repo_name: str, branch: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Get the status of the latest GitHub Actions workflow run.
@@ -104,7 +107,7 @@ class GitHubClient:
             # Get workflow runs for the branch
             workflow_runs = repo.get_workflow_runs(branch=target_branch)
 
-            pipeline_data = {
+            pipeline_data: Dict[str, Any] = {
                 "repository": repo_name,
                 "owner": self.owner,
                 "branch": target_branch,
@@ -194,7 +197,7 @@ class GitHubClient:
                 # Get workflow summary
                 try:
                     recent_runs = list(workflow_runs[:10])
-                    summary = {"total_runs": len(recent_runs), "by_conclusion": {}}
+                    summary: Dict[str, Any] = {"total_runs": len(recent_runs), "by_conclusion": {}}
 
                     for run in recent_runs:
                         conclusion = run.conclusion or "in_progress"
@@ -234,7 +237,7 @@ class GitHubClient:
         retry=retry_if_exception_type(GithubException),
     )
     def get_recent_commits(
-        self, repo_name: str, branch: str = None, days: int = 7
+        self, repo_name: str, branch: Optional[str] = None, days: int = 7
     ) -> Dict[str, Any]:
         """
         Get recent commits for a repository.
@@ -262,7 +265,7 @@ class GitHubClient:
 
             commits = repo.get_commits(sha=target_branch, since=since)
 
-            commits_data = {
+            commits_data: Dict[str, Any] = {
                 "repository": repo_name,
                 "owner": self.owner,
                 "branch": target_branch,
@@ -374,7 +377,7 @@ class GitHubClient:
 
             pulls = repo.get_pulls(state=state, sort="updated", direction="desc")
 
-            prs_data = {
+            prs_data: Dict[str, Any] = {
                 "repository": repo_name,
                 "owner": self.owner,
                 "state": state,

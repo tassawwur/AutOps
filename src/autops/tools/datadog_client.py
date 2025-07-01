@@ -2,7 +2,7 @@
 DataDog API Client for metrics and monitoring data retrieval.
 """
 import time
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from datetime import datetime, timedelta
 
 from datadog_api_client import ApiClient, Configuration
@@ -31,7 +31,7 @@ class DatadogClient:
     Production-ready DataDog API client for retrieving metrics and monitoring data.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.logger = get_logger(f"{__name__}.DatadogClient")
 
         # Configure DataDog API client
@@ -177,7 +177,7 @@ class DatadogClient:
     def get_service_metrics(
         self,
         service_name: str,
-        metrics: List[str] = None,
+        metrics: Optional[List[str]] = None,
         time_window_minutes: int = 60,
     ) -> Dict[str, Any]:
         """

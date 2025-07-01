@@ -1,4 +1,5 @@
 import json
+from typing import Dict, Any, Optional, Union
 from ..tools.github_client import github_client
 from ..agents.information_retrieval_agent import InformationRetrievalAgent
 from ..agents.planning_agent import analyze_context_and_suggest_fix
@@ -14,7 +15,7 @@ AGENTS = {
 TOOLS = {"github_client": github_client}
 
 
-def execute_step(step: dict, context: dict = None) -> dict:
+def execute_step(step: Dict[str, Any], context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     """
     Executes a single step from a plan by calling the specified agent or tool.
     """

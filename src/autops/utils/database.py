@@ -3,7 +3,7 @@ Database utilities and models for AutOps.
 """
 import os
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional, Any, Generator
 from sqlalchemy import (
     create_engine,
     Column,
@@ -17,17 +17,20 @@ from sqlalchemy import (
     Index,
     desc,
     or_,
+    func,
+    Engine,
 )
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.ext.declarative import declarative_base, DeclarativeMeta
 from sqlalchemy.orm import sessionmaker, Session, relationship
 from contextlib import contextmanager
 import structlog
+from sqlalchemy.exc import SQLAlchemyError
 
-from ..config import settings
+from ..config import settings, config
 from .exceptions import DatabaseError
 
 
-Base = declarative_base()
+Base: DeclarativeMeta = declarative_base()
 logger = structlog.get_logger(__name__)
 
 
@@ -212,92 +215,64 @@ class AuditLog(Base):
 
 
 class DatabaseManager:
-    """Database connection and session management."""
+    """Thread-safe database manager with connection pooling."""
 
-    def __init__(self):
-        self.engine = None
-        self.SessionLocal = None
-        self._initialized = False
+    def __init__(self) -> None:
+        self.engine: Optional[Engine] = None
+        self.SessionLocal: Optional[sessionmaker[Session]] = None
 
-    def initialize(self, database_url: str = None):
-        """Initialize database connection."""
+    def initialize(self, database_url: str) -> None:
+        """Initialize the database connection."""
         try:
-            db_url = database_url or settings.database_url
-
-            if not db_url:
-                # Default to SQLite for development
-                db_dir = os.path.join(
-                    os.path.dirname(__file__), "..", "..", "..", "data"
-                )
-                os.makedirs(db_dir, exist_ok=True)
-                db_url = f"sqlite:///{os.path.join(db_dir, 'autops.db')}"
-                logger.info("Using SQLite database for development", path=db_url)
-
-            # Engine configuration
-            engine_kwargs = {}
-            if db_url.startswith("sqlite"):
-                engine_kwargs["connect_args"] = {"check_same_thread": False}
-            elif db_url.startswith("postgresql"):
-                engine_kwargs["pool_size"] = 10
-                engine_kwargs["max_overflow"] = 20
-                engine_kwargs["pool_pre_ping"] = True
-
-            self.engine = create_engine(db_url, **engine_kwargs)
-            self.SessionLocal = sessionmaker(
-                autocommit=False, autoflush=False, bind=self.engine
-            )
-
-            # Create tables
+            self.engine = create_engine(database_url, echo=config.DEBUG)
+            
+            # Create all tables
             Base.metadata.create_all(bind=self.engine)
-
-            self._initialized = True
-            logger.info(
-                "Database initialized successfully",
-                url=db_url.split("@")[-1] if "@" in db_url else db_url,
-            )
-
+            
+            # Create sessionmaker
+            self.SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
+            
+            logger.info("Database initialized successfully")
         except Exception as e:
-            logger.error("Failed to initialize database", error=str(e))
-            raise DatabaseError(f"Database initialization failed: {str(e)}")
+            logger.error(f"Failed to initialize database: {e}")
+            raise
 
     def health_check(self) -> Dict[str, Any]:
-        """Check database health."""
-        if not self._initialized:
-            return {"status": "not_initialized", "healthy": False}
-
+        """Check database connectivity."""
         try:
-            with self.get_session() as session:
-                # Simple query to test connection
-                session.execute("SELECT 1")
-                return {
-                    "status": "healthy",
-                    "healthy": True,
-                    "timestamp": datetime.utcnow().isoformat(),
-                }
+            if not self.engine:
+                return {"status": "unhealthy", "message": "Database not initialized"}
+            
+            # Try to connect and execute a simple query
+            with self.engine.connect() as conn:
+                conn.execute("SELECT 1")
+            
+            return {"status": "healthy", "message": "Database connection successful"}
         except Exception as e:
-            return {
-                "status": "unhealthy",
-                "healthy": False,
-                "error": str(e),
-                "timestamp": datetime.utcnow().isoformat(),
-            }
+            logger.error(f"Database health check failed: {e}")
+            return {"status": "unhealthy", "message": str(e)}
 
     @contextmanager
-    def get_session(self) -> Session:
-        """Get database session with automatic cleanup."""
-        if not self._initialized:
-            self.initialize()
-
+    def get_session(self) -> Generator[Session, None, None]:
+        """Get a database session with automatic cleanup."""
+        if not self.SessionLocal:
+            raise RuntimeError("Database not initialized")
+        
         session = self.SessionLocal()
         try:
             yield session
             session.commit()
-        except Exception as e:
+        except Exception:
             session.rollback()
-            logger.error("Database session error", error=str(e))
-            raise DatabaseError(f"Database operation failed: {str(e)}")
+            raise
         finally:
             session.close()
+
+    def get_session_direct(self) -> Session:
+        """Get a database session for manual management."""
+        if not self.SessionLocal:
+            raise RuntimeError("Database not initialized")
+        return self.SessionLocal()
 
 
 # Global database manager instance
@@ -305,8 +280,8 @@ db_manager = DatabaseManager()
 
 
 def get_db_session() -> Session:
-    """Get database session - for dependency injection."""
-    return db_manager.get_session()
+    """Get database session (for dependency injection)."""
+    return db_manager.get_session_direct()
 
 
 class QueryRepository:
@@ -317,7 +292,7 @@ class QueryRepository:
         """Create a new query record."""
         query = Query(**query_data)
         session.add(query)
-        session.flush()
+        session.flush()  # Get the ID without committing
         return query
 
     @staticmethod
@@ -327,10 +302,10 @@ class QueryRepository:
 
     @staticmethod
     def update_query_status(
-        session: Session, query_id: str, status: str, **kwargs
+        session: Session, query_id: str, status: str, **kwargs: Any
     ) -> bool:
         """Update query status and other fields."""
-        query = QueryRepository.get_query_by_id(session, query_id)
+        query = session.query(Query).filter(Query.query_id == query_id).first()
         if query:
             query.status = status
             for key, value in kwargs.items():
@@ -341,7 +316,7 @@ class QueryRepository:
 
     @staticmethod
     def get_recent_queries(
-        session: Session, user_id: str = None, limit: int = 50
+        session: Session, user_id: Optional[str] = None, limit: int = 50
     ) -> List[Query]:
         """Get recent queries, optionally filtered by user."""
         query = session.query(Query).order_by(desc(Query.created_at))
@@ -360,27 +335,29 @@ class MetricsRepository:
         metric_type: str,
         value: Dict[str, Any],
         source: str,
-        record_metadata: Dict[str, Any] = None,
-    ):
+        record_metadata: Optional[Dict[str, Any]] = None,
+    ) -> ServiceMetrics:
         """Store service metrics."""
-        metric = ServiceMetrics(
+        metrics = ServiceMetrics(
             service_name=service_name,
             metric_type=metric_type,
             value=value,
             source=source,
             record_metadata=record_metadata,
         )
-        session.add(metric)
+        session.add(metrics)
+        session.flush()
+        return metrics
 
     @staticmethod
     def get_metrics(
         session: Session,
         service_name: str,
-        metric_type: str = None,
-        start_time: datetime = None,
-        end_time: datetime = None,
+        metric_type: Optional[str] = None,
+        start_time: Optional[datetime] = None,
+        end_time: Optional[datetime] = None,
     ) -> List[ServiceMetrics]:
-        """Get metrics with filtering."""
+        """Get metrics with optional filtering."""
         query = session.query(ServiceMetrics).filter(
             ServiceMetrics.service_name == service_name
         )
@@ -398,8 +375,8 @@ class MetricsRepository:
 
     @staticmethod
     def cleanup_old_metrics(session: Session, days_to_keep: int = 30) -> int:
-        """Clean up old metrics data."""
-        cutoff_date = datetime.utcnow() - timedelta(days=days_to_keep)
+        """Remove old metrics beyond retention period."""
+        cutoff_date = datetime.now() - timedelta(days=days_to_keep)
         deleted = (
             session.query(ServiceMetrics)
             .filter(ServiceMetrics.timestamp < cutoff_date)
@@ -421,40 +398,49 @@ class IncidentRepository:
 
     @staticmethod
     def get_active_incidents(
-        session: Session, service_name: str = None
+        session: Session, service_name: Optional[str] = None
     ) -> List[Incident]:
-        """Get active incidents."""
+        """Get active incidents, optionally filtered by service."""
         query = session.query(Incident).filter(
-            Incident.status.in_(["open", "investigating"])
+            or_(Incident.status == "open", Incident.status == "investigating")
         )
+
         if service_name:
             query = query.filter(Incident.service_name == service_name)
+
         return query.order_by(desc(Incident.created_at)).all()
 
     @staticmethod
     def resolve_incident(
         session: Session,
         incident_id: str,
-        resolution_actions: Dict[str, Any] = None,
+        resolution_actions: Optional[Dict[str, Any]] = None,
         auto_resolved: bool = False,
     ) -> bool:
-        """Resolve an incident."""
+        """Mark incident as resolved."""
         incident = (
-            session.query(Incident).filter(Incident.incident_id == incident_id).first()
+            session.query(Incident)
+            .filter(Incident.incident_id == incident_id)
+            .first()
         )
-        if incident and incident.status in ["open", "investigating"]:
-            incident.status = "resolved"
-            incident.resolved_at = datetime.utcnow()
-            incident.auto_resolved = auto_resolved
-            incident.resolution_actions = resolution_actions
 
-            if incident.created_at:
+        if incident:
+            incident.status = "resolved"
+            incident.resolved_at = datetime.now()
+            incident.auto_resolved = auto_resolved
+
+            if resolution_actions:
+                incident.resolution_actions = resolution_actions
+
+            # Calculate resolution time
+            if incident.created_at and incident.resolved_at:
                 resolution_time = (
                     incident.resolved_at - incident.created_at
                 ).total_seconds() / 60
                 incident.resolution_time_minutes = int(resolution_time)
 
             return True
+
         return False
 
 
@@ -473,45 +459,49 @@ class KnowledgeBaseRepository:
     def search_articles(
         session: Session,
         query: str,
-        category: str = None,
-        service_name: str = None,
+        category: Optional[str] = None,
+        service_name: Optional[str] = None,
         limit: int = 10,
     ) -> List[KnowledgeBase]:
         """Search knowledge base articles."""
-        search_query = session.query(KnowledgeBase).filter(KnowledgeBase.is_active)
+        # Simple text search - could be enhanced with full-text search
+        search_query = session.query(KnowledgeBase).filter(
+            KnowledgeBase.is_active == True  # noqa: E712
+        )
 
-        # Simple text search (in production, use full-text search)
-        if query:
+        # Text search in title and content
+        search_terms = query.lower().split()
+        for term in search_terms:
             search_query = search_query.filter(
                 or_(
-                    KnowledgeBase.title.contains(query),
-                    KnowledgeBase.content.contains(query),
+                    KnowledgeBase.title.ilike(f"%{term}%"),
+                    KnowledgeBase.content.ilike(f"%{term}%"),
                 )
             )
 
         if category:
             search_query = search_query.filter(KnowledgeBase.category == category)
 
-        # Note: JSON array search syntax varies by database
-        # This is a simplified version - in production, use database-specific JSON queries
+        if service_name:
+            # Search in service_names JSON field
+            search_query = search_query.filter(
+                KnowledgeBase.service_names.contains([service_name])
+            )
 
-        return search_query.order_by(desc(KnowledgeBase.usage_count)).limit(limit).all()
+        return (
+            search_query.order_by(desc(KnowledgeBase.usage_count))
+            .limit(limit)
+            .all()
+        )
 
     @staticmethod
-    def increment_usage(session: Session, article_id: int):
+    def increment_usage(session: Session, article_id: int) -> None:
         """Increment usage count for an article."""
-        article = (
-            session.query(KnowledgeBase).filter(KnowledgeBase.id == article_id).first()
-        )
+        article = session.query(KnowledgeBase).filter(KnowledgeBase.id == article_id).first()
         if article:
             article.usage_count += 1
 
 
-def initialize_database():
-    """Initialize database on startup."""
-    try:
-        db_manager.initialize()
-        logger.info("Database initialization completed")
-    except Exception as e:
-        logger.error("Database initialization failed", error=str(e))
-        raise
+def initialize_database() -> None:
+    """Initialize the database."""
+    db_manager.initialize(settings.get_database_url())

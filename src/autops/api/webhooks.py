@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Request, BackgroundTasks, Form, Response, HTTPException
-from typing import Annotated
+from typing import Annotated, Dict, Any
 import json
 import hmac
 import hashlib
@@ -43,7 +43,7 @@ def verify_slack_signature(request_body: bytes, timestamp: str, signature: str) 
     return hmac.compare_digest(my_signature, signature)
 
 
-async def run_autops_workflow(text: str, channel_id: str):
+async def run_autops_workflow(text: str, channel_id: str) -> None:
     """
     This function runs the full AutOps agent workflow as a background task.
     """
@@ -83,7 +83,7 @@ async def run_autops_workflow(text: str, channel_id: str):
 
 
 @router.post("/slack/events")
-async def slack_events(request: Request, background_tasks: BackgroundTasks):
+async def slack_events(request: Request, background_tasks: BackgroundTasks) -> Dict[str, Any]:
     # Verify the request came from Slack
     body_bytes = await request.body()
     timestamp = request.headers.get("X-Slack-Request-Timestamp", "")
@@ -118,7 +118,7 @@ async def slack_slash_command(
     channel_id: Annotated[str, Form()] = None,
     user_id: Annotated[str, Form()] = None,
     background_tasks: BackgroundTasks = None,
-):
+) -> Dict[str, Any]:
     """
     Handles Slack slash commands (e.g., /autops).
     """
@@ -143,7 +143,7 @@ async def slack_slash_command(
 
 
 @router.post("/slack/interactive")
-async def slack_interactive(payload: Annotated[str, Form()]):
+async def slack_interactive(payload: Annotated[str, Form()]) -> Response:
     """
     Handles interactive components like button clicks.
     """

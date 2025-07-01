@@ -3,9 +3,9 @@ Configuration management for AutOps.
 """
 import os
 from enum import Enum
-from typing import Optional
+from typing import Optional, Any
 
-from pydantic import Field, validator
+from pydantic import BaseModel, validator
 from pydantic_settings import BaseSettings
 
 from .utils.exceptions import ConfigurationError
@@ -23,98 +23,96 @@ class Settings(BaseSettings):
     """Application settings with validation."""
 
     # Environment
-    environment: Environment = Field(default=Environment.DEVELOPMENT, env="APP_ENV")
-    debug: bool = Field(default=False, env="DEBUG")
+    environment: Environment = Environment.DEVELOPMENT
+    debug: bool = False
 
     # Logging
-    log_level: str = Field(default="INFO", env="LOG_LEVEL")
-    json_logs: bool = Field(default=True)
+    log_level: str = "INFO"
+    json_logs: bool = True
 
     # API Configuration
-    api_host: str = Field(default="0.0.0.0", env="API_HOST")
-    api_port: int = Field(default=8000, env="API_PORT")
-    api_workers: int = Field(default=1)
+    api_host: str = "0.0.0.0"
+    api_port: int = 8000
+    api_workers: int = 1
 
     # Security
-    secret_key: str = Field(default="dev-secret-key", env="SECRET_KEY")
-    allowed_hosts: list[str] = Field(default=["*"], env="ALLOWED_HOSTS")
-    slack_signing_secret: str = Field(..., env="SLACK_SIGNING_SECRET")
-    encryption_key: Optional[str] = Field(default=None)
+    secret_key: str = "dev-secret-key"
+    allowed_hosts: list[str] = ["*"]
+    slack_signing_secret: str = "dev-signing-secret"
+    encryption_key: Optional[str] = None
 
     # OpenAI
-    openai_api_key: str = Field(..., env="OPENAI_API_KEY")
-    openai_model: str = Field(default="gpt-4", env="OPENAI_MODEL")
-    openai_max_tokens: int = Field(default=2000, env="OPENAI_MAX_TOKENS")
-    openai_temperature: float = Field(default=0.7, env="OPENAI_TEMPERATURE")
-    openai_timeout: int = Field(default=30)
-    openai_max_retries: int = Field(default=3)
+    openai_api_key: str = "sk-placeholder"
+    openai_model: str = "gpt-4"
+    openai_max_tokens: int = 2000
+    openai_temperature: float = 0.7
+    openai_timeout: int = 30
+    openai_max_retries: int = 3
 
     # Slack
-    slack_app_id: Optional[str] = Field(None, env="SLACK_APP_ID")
-    slack_client_id: Optional[str] = Field(None, env="SLACK_CLIENT_ID")
-    slack_client_secret: Optional[str] = Field(None, env="SLACK_CLIENT_SECRET")
-    slack_bot_token: str = Field(..., env="SLACK_BOT_TOKEN")
-    slack_verification_token: Optional[str] = Field(
-        None, env="SLACK_VERIFICATION_TOKEN"
-    )
-    slack_app_token: Optional[str] = Field(default=None)
+    slack_app_id: Optional[str] = None
+    slack_client_id: Optional[str] = None
+    slack_client_secret: Optional[str] = None
+    slack_bot_token: str = "xoxb-placeholder"
+    slack_verification_token: Optional[str] = None
+    slack_app_token: Optional[str] = None
 
     # GitHub
-    github_token: str = Field(..., env="GITHUB_TOKEN")
-    github_owner: str = Field(..., env="GITHUB_OWNER")
-    github_webhook_secret: Optional[str] = Field(None, env="GITHUB_WEBHOOK_SECRET")
-    github_timeout: int = Field(default=30)
+    github_token: str = "ghp_placeholder"
+    github_owner: str = "placeholder"
+    github_webhook_secret: Optional[str] = None
+    github_timeout: int = 30
 
     # GitLab
-    gitlab_url: str = Field(default="https://gitlab.com", env="GITLAB_URL")
-    gitlab_token: Optional[str] = Field(None, env="GITLAB_TOKEN")
-    gitlab_timeout: int = Field(default=30)
+    gitlab_url: str = "https://gitlab.com"
+    gitlab_token: Optional[str] = None
+    gitlab_timeout: int = 30
 
     # Datadog
-    datadog_api_key: Optional[str] = Field(None, env="DATADOG_API_KEY")
-    datadog_app_key: Optional[str] = Field(None, env="DATADOG_APP_KEY")
-    datadog_site: str = Field(default="datadoghq.com", env="DATADOG_SITE")
+    datadog_api_key: Optional[str] = None
+    datadog_app_key: Optional[str] = None
+    datadog_site: str = "datadoghq.com"
 
     # PagerDuty
-    pagerduty_api_key: Optional[str] = Field(None, env="PAGERDUTY_API_KEY")
-    pagerduty_email: Optional[str] = Field(None, env="PAGERDUTY_EMAIL")
+    pagerduty_api_key: Optional[str] = None
+    pagerduty_email: Optional[str] = None
 
     # Redis (for caching and task queues)
-    redis_url: str = Field(default="redis://localhost:6379/0", env="REDIS_URL")
-    redis_pool_size: int = Field(default=10, env="REDIS_POOL_SIZE")
-    redis_timeout: int = Field(default=5, env="REDIS_TIMEOUT")
+    redis_url: str = "redis://localhost:6379/0"
+    redis_pool_size: int = 10
+    redis_timeout: int = 5
 
     # Celery (for background tasks)
-    celery_broker_url: str = Field(default="redis://localhost:6379/1")
-    celery_result_backend: str = Field(default="redis://localhost:6379/2")
+    celery_broker_url: str = "redis://localhost:6379/1"
+    celery_result_backend: str = "redis://localhost:6379/2"
 
     # Database
-    database_url: Optional[str] = Field(None, env="DATABASE_URL")
-    database_pool_size: int = Field(default=10, env="DATABASE_POOL_SIZE")
-    database_max_overflow: int = Field(default=20, env="DATABASE_MAX_OVERFLOW")
+    database_url: Optional[str] = None
+    database_pool_size: int = 10
+    database_max_overflow: int = 20
 
     # Monitoring
-    prometheus_enabled: bool = Field(default=True, env="PROMETHEUS_ENABLED")
-    prometheus_port: int = Field(default=9090, env="PROMETHEUS_PORT")
-    metrics_endpoint: str = Field(default="/metrics", env="METRICS_ENDPOINT")
-    health_check_endpoint: str = Field(default="/health", env="HEALTH_CHECK_ENDPOINT")
-    enable_metrics: bool = Field(default=True, env="ENABLE_METRICS")
+    prometheus_enabled: bool = True
+    prometheus_port: int = 9090
+    metrics_endpoint: str = "/metrics"
+    health_check_endpoint: str = "/health"
+    enable_metrics: bool = True
 
     # Rate Limiting
-    rate_limit_enabled: bool = Field(default=True, env="RATE_LIMIT_ENABLED")
-    rate_limit_requests: int = Field(default=100, env="RATE_LIMIT_REQUESTS")
-    rate_limit_period: int = Field(default=60, env="RATE_LIMIT_PERIOD")
+    rate_limit_enabled: bool = True
+    rate_limit_requests: int = 100
+    rate_limit_period: int = 60
 
     # Docker Hub (for CI/CD)
-    docker_username: Optional[str] = Field(None, env="DOCKER_USERNAME")
-    docker_token: Optional[str] = Field(None, env="DOCKER_TOKEN")
+    docker_username: Optional[str] = None
+    docker_token: Optional[str] = None
 
     # Gemini API (for future use)
-    gemini_api_key: Optional[str] = Field(None, env="GEMINI_API_KEY")
+    gemini_api_key: Optional[str] = None
 
     # Circuit Breaker
-    circuit_breaker_failure_threshold: int = Field(default=5)
-    circuit_breaker_recovery_timeout: int = Field(default=60)
+    circuit_breaker_failure_threshold: int = 5
+    circuit_breaker_recovery_timeout: int = 60
 
     class Config:
         env_file = ".env"
@@ -122,40 +120,44 @@ class Settings(BaseSettings):
         case_sensitive = False
 
     @validator("environment", pre=True)
-    def validate_environment(cls, v):
+    def validate_environment(cls, v: Any) -> Environment:
         if isinstance(v, str):
             try:
                 return Environment(v.lower())
             except ValueError:
                 raise ConfigurationError(f"Invalid environment: {v}")
-        return v
+        if isinstance(v, Environment):
+            return v
+        raise ConfigurationError(f"Invalid environment type: {type(v)}")
 
     @validator("debug")
-    def validate_debug(cls, v, values):
+    def validate_debug(cls, v: bool, values: dict[str, Any]) -> bool:
         env = values.get("environment")
         if env == Environment.PRODUCTION and v:
             raise ConfigurationError("Debug mode cannot be enabled in production")
         return v
 
     @validator("api_workers")
-    def validate_workers(cls, v):
+    def validate_workers(cls, v: int) -> int:
         if v < 1:
             raise ConfigurationError("API workers must be at least 1")
         return v
 
     @validator("log_level")
-    def validate_log_level(cls, v):
+    def validate_log_level(cls, v: str) -> str:
         valid_levels = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
         if v.upper() not in valid_levels:
             raise ConfigurationError(f"Invalid log level: {v}")
         return v.upper()
 
     @validator("allowed_hosts", pre=True)
-    def parse_allowed_hosts(cls, v):
+    def parse_allowed_hosts(cls, v: Any) -> list[str]:
         """Parse allowed hosts from comma-separated string."""
         if isinstance(v, str):
             return [host.strip() for host in v.split(",")]
-        return v
+        if isinstance(v, list):
+            return v
+        raise ConfigurationError(f"Invalid allowed_hosts type: {type(v)}")
 
     @property
     def is_development(self) -> bool:
@@ -180,7 +182,7 @@ class Settings(BaseSettings):
     def get_database_url(self) -> str:
         """Get database URL based on environment."""
         if self.is_production:
-            return self.database_url or os.getenv("DATABASE_URL", "")
+            return self.database_url or os.getenv("DATABASE_URL") or ""
         return "sqlite:///./autops_dev.db"
 
 

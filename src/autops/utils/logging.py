@@ -3,7 +3,7 @@ Structured logging configuration for AutOps.
 """
 import logging
 import sys
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import structlog
 from structlog import stdlib
@@ -44,7 +44,7 @@ def configure_logging(level: str = "INFO", json_logs: bool = True) -> None:
 
 def get_logger(name: str) -> structlog.stdlib.BoundLogger:
     """Get a structured logger instance."""
-    return structlog.get_logger(name)
+    return structlog.get_logger(name)  # type: ignore[no-any-return]
 
 
 def log_api_request(
@@ -74,7 +74,7 @@ def log_agent_execution(
 def log_error(
     logger: structlog.stdlib.BoundLogger,
     error: Exception,
-    context: Dict[str, Any] = None,
+    context: Optional[Dict[str, Any]] = None,
 ) -> None:
     """Log error with structured context."""
     logger.error(
