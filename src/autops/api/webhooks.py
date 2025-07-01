@@ -186,9 +186,7 @@ async def slack_interactive(payload: Annotated[str, Form()]) -> Response:
     elif action_id.startswith("deny_"):
         logger.info(f"User {user} denied action: {value}")
         client = slack_client()
-        client.post_message(
-            channel=channel, text=f"❌ Remediation denied by <@{user}>."
-        )
+        client.post_message(channel=channel, text=f"❌ Remediation denied by <@{user}>.")
 
     # Acknowledge the interaction
     return Response(status_code=200)

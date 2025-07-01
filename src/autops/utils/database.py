@@ -27,7 +27,7 @@ import structlog
 from ..config import settings
 
 
-# Create the base class for SQLAlchemy models  
+# Create the base class for SQLAlchemy models
 Base = declarative_base()  # type: ignore
 logger = structlog.get_logger(__name__)
 

@@ -47,7 +47,9 @@ class PagerDutyClient:
         wait=wait_exponential(multiplier=1, min=4, max=10),
         retry=retry_if_exception_type(pdpyras.PDClientError),
     )
-    def get_active_incidents(self, service_name: Optional[str] = None) -> Dict[str, Any]:
+    def get_active_incidents(
+        self, service_name: Optional[str] = None
+    ) -> Dict[str, Any]:
         """
         Get active incidents from PagerDuty, optionally filtered by service.
 
