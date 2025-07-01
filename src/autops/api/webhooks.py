@@ -74,12 +74,14 @@ async def run_autops_workflow(text: str, channel_id: str) -> None:
         final_response_message = generate_response(plan, results)
 
         # Step 5: Send the response back to Slack
-        await slack_client.post_message(channel_id, text=final_response_message)
+        client = slack_client()
+        await client.post_message(channel_id, text=final_response_message)
 
     except Exception as e:
         logger.error(f"An error occurred during AutOps workflow: {e}", exc_info=True)
         error_message = f"Sorry, I encountered an error: {e}"
-        await slack_client.post_message(channel_id, text=error_message)
+        client = slack_client()
+        await client.post_message(channel_id, text=error_message)
 
 
 @router.post("/slack/events")
@@ -165,22 +167,26 @@ async def slack_interactive(payload: Annotated[str, Form()]) -> Response:
         try:
             action_data = json.loads(value)
             # Execute the approved remediation action
-            slack_client.post_message(
+            client = slack_client()
+            client.post_message(
                 channel=channel,
                 text=f"🔄 Executing: {action_data.get('action', 'Unknown action')}...",
             )
         except json.JSONDecodeError:
             logger.error(f"Failed to parse action value: {value}")
-            slack_client.post_message(
+            client = slack_client()
+            client.post_message(
                 channel=channel, text="❌ Failed to parse the approved action."
             )
-        slack_client.post_message(
+        client = slack_client()
+        client.post_message(
             channel=channel,
             text=f"✅ Remediation approved by <@{user}>. Executing action...",
         )
     elif action_id.startswith("deny_"):
         logger.info(f"User {user} denied action: {value}")
-        slack_client.post_message(
+        client = slack_client()
+        client.post_message(
             channel=channel, text=f"❌ Remediation denied by <@{user}>."
         )
 

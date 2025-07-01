@@ -326,7 +326,8 @@ async def run_orchestrator(plan: Dict[str, Any], channel: str) -> None:
         log_error(orchestrator_logger, e, {"plan": plan, "channel": channel})
         # Send error response to user
         try:
-            slack_client.post_message(
+            client = slack_client()
+            client.post_message(
                 channel=channel,
                 text="I encountered an error while processing your request. "
                 "Please try again later.",
@@ -349,7 +350,8 @@ async def send_response(
         if failed_step:
             # Send error response
             error_message = failed_step.get("error", "Unknown error occurred")
-            slack_client.post_message(
+            client = slack_client()
+            client.post_message(
                 channel=channel,
                 text=f"I encountered an error while processing your request: "
                 f"{error_message}",
@@ -359,7 +361,8 @@ async def send_response(
             remediation_blocks = generate_incident_remediation_message(
                 last_successful_output
             )
-            slack_client.post_message(
+            client = slack_client()
+            client.post_message(
                 channel=channel,
                 blocks=remediation_blocks,
                 text="Incident analysis complete. Suggested remediation below.",
@@ -370,12 +373,14 @@ async def send_response(
                 original_query,
                 {"status": "completed", "result": last_successful_output},
             )
-            slack_client.post_message(channel=channel, text=final_response)
+            client = slack_client()
+            client.post_message(channel=channel, text=final_response)
 
     except Exception as e:
         log_error(logger, e, {"plan": plan, "channel": channel})
         # Fallback message
-        slack_client.post_message(
+        client = slack_client()
+        client.post_message(
             channel=channel,
             text="I completed processing your request but encountered an error "
             "generating the response.",

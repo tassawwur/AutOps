@@ -182,7 +182,10 @@ def analyze_context_and_suggest_fix(context: Dict[str, Any]) -> Dict[str, Any]:
             temperature=0,
         )
 
-        return json.loads(response.choices[0].message.content)
+        content = response.choices[0].message.content
+        if not content:
+            raise Exception("Empty response from LLM")
+        return json.loads(content)
 
     except Exception as e:
         logger.error(f"Analysis failed: {e}")

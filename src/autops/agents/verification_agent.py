@@ -245,7 +245,10 @@ class VerificationAgent:
                 temperature=0.1,
             )
 
-            reflection = json.loads(response.choices[0].message.content)
+            content = response.choices[0].message.content
+            if not content:
+                raise AgentExecutionError("Empty response from LLM")
+            reflection = json.loads(content)
 
             # Add metadata
             reflection.update(
