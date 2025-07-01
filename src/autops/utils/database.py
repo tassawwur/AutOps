@@ -24,10 +24,8 @@ from sqlalchemy.ext.declarative import declarative_base, DeclarativeMeta
 from sqlalchemy.orm import sessionmaker, Session, relationship
 from contextlib import contextmanager
 import structlog
-from sqlalchemy.exc import SQLAlchemyError
 
 from ..config import settings, config
-from .exceptions import DatabaseError
 
 
 Base: DeclarativeMeta = declarative_base()
