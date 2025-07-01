@@ -36,15 +36,15 @@ class DatadogClient:
         self.logger = get_logger(f"{__name__}.DatadogClient")
 
         # Configure DataDog API client
-        configuration = Configuration()
+        configuration = Configuration()  # type: ignore[no-untyped-call]
         configuration.api_key["apiKeyAuth"] = settings.datadog_api_key
         configuration.api_key["appKeyAuth"] = settings.datadog_app_key
         configuration.server_variables["site"] = settings.datadog_site
 
         self.api_client = ApiClient(configuration)
-        self.metrics_api = MetricsApi(self.api_client)
-        self.events_api = EventsApi(self.api_client)
-        self.monitors_api = MonitorsApi(self.api_client)
+        self.metrics_api = MetricsApi(self.api_client)  # type: ignore[no-untyped-call]
+        self.events_api = EventsApi(self.api_client)  # type: ignore[no-untyped-call]
+        self.monitors_api = MonitorsApi(self.api_client)  # type: ignore[no-untyped-call]
 
     def validate_service_name(self, service_name: str) -> None:
         """Validate service name parameter."""
@@ -241,7 +241,7 @@ class DatadogClient:
                                 if point[1] is not None
                             ]
                             if values:
-                                metric_data = {
+                                metric_data = {  # type: ignore[dict-item]
                                     "has_data": True,
                                     "value": sum(values) / len(values),
                                     "data_points": len(values),
@@ -249,13 +249,13 @@ class DatadogClient:
                                     "min": min(values),
                                 }
 
-                    results["metrics"][metric] = metric_data
+                    results["metrics"][metric] = metric_data  # type: ignore[index]
 
                 except Exception as e:
                     self.logger.warning(
                         "Failed to fetch metric", metric=metric, error=str(e)
                     )
-                    results["metrics"][metric] = {"has_data": False, "error": str(e)}
+                    results["metrics"][metric] = {"has_data": False, "error": str(e)}  # type: ignore[index]
 
             # Log execution
             duration_ms = (time.time() - start_time) * 1000
@@ -396,12 +396,12 @@ class DatadogClient:
                             "status": monitor.overall_state,
                             "type": monitor.type,
                         }
-                        monitor_data["monitors"].append(monitor_info)
+                        monitor_data["monitors"].append(monitor_info)  # type: ignore[attr-defined]
 
                         # Count alerts by status
                         status = monitor.overall_state
-                        if status in monitor_data["alerts"]:
-                            monitor_data["alerts"][status] += 1
+                        if status in monitor_data["alerts"]:  # type: ignore[operator]
+                            monitor_data["alerts"][status] += 1  # type: ignore[index]
 
                 # Log execution
                 duration_ms = (time.time() - start_time) * 1000
@@ -419,7 +419,7 @@ class DatadogClient:
             except ApiException as e:
                 self.logger.warning("DataDog monitors API error", error=str(e))
                 raise DatadogAPIError(
-                    f"Monitor API error: {str(e)}", "DataDog", e.status
+                    f"Monitor API error: {str(e)}", status_code=e.status
                 )
 
         except Exception as e:
