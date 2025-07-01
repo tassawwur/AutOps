@@ -425,7 +425,9 @@ def get_last_deployment(service_name: str) -> Dict[str, Any]:
     return get_gitlab_client().get_last_deployment(service_name)
 
 
-def get_pipeline_status(service_name: str, pipeline_id: Optional[str] = None) -> Dict[str, Any]:
+def get_pipeline_status(
+    service_name: str, pipeline_id: Optional[str] = None
+) -> Dict[str, Any]:
     """Convenience function for backward compatibility."""
     return get_gitlab_client().get_pipeline_status(service_name, pipeline_id)
 
