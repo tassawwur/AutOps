@@ -445,7 +445,9 @@ def get_error_rate_metrics(service_name: str) -> Dict[str, Any]:
     return get_datadog_client().get_error_rate_metrics(service_name)
 
 
-def get_service_metrics(service_name: str, metrics: Optional[List[str]] = None) -> Dict[str, Any]:
+def get_service_metrics(
+    service_name: str, metrics: Optional[List[str]] = None
+) -> Dict[str, Any]:
     """Convenience function for backward compatibility."""
     return get_datadog_client().get_service_metrics(service_name, metrics)
 
