@@ -79,7 +79,7 @@ async def perform_startup_checks() -> None:
         from .agents.query_understanding_agent import query_understanding_agent
 
         # Test query understanding agent
-        await query_understanding_agent.get_structured_query("test query")
+        query_understanding_agent.get_structured_query("test query")
         logger.info("OpenAI API check passed")
     except Exception as e:
         logger.error("OpenAI API check failed", error=str(e))

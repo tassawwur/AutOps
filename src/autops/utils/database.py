@@ -32,7 +32,7 @@ Base = declarative_base()  # type: ignore
 logger = structlog.get_logger(__name__)
 
 
-class AgentExecution(Base):
+class AgentExecution(Base):  # type: ignore
     """Model for tracking agent executions."""
 
     __tablename__ = "agent_executions"
@@ -57,7 +57,7 @@ class AgentExecution(Base):
     )
 
 
-class Query(Base):
+class Query(Base):  # type: ignore
     """Model for storing user queries and responses."""
 
     __tablename__ = "queries"
@@ -88,7 +88,7 @@ class Query(Base):
     )
 
 
-class QueryAgentExecution(Base):
+class QueryAgentExecution(Base):  # type: ignore
     """Association table linking queries to agent executions."""
 
     __tablename__ = "query_agent_executions"
@@ -107,7 +107,7 @@ class QueryAgentExecution(Base):
     __table_args__ = (Index("idx_query_agent_exec_query", "query_id"),)
 
 
-class ServiceMetrics(Base):
+class ServiceMetrics(Base):  # type: ignore
     """Model for storing service metrics snapshots."""
 
     __tablename__ = "service_metrics"
@@ -133,7 +133,7 @@ class ServiceMetrics(Base):
     )
 
 
-class Incident(Base):
+class Incident(Base):  # type: ignore
     """Model for tracking incidents and their resolutions."""
 
     __tablename__ = "incidents"
@@ -165,7 +165,7 @@ class Incident(Base):
     )
 
 
-class KnowledgeBase(Base):
+class KnowledgeBase(Base):  # type: ignore
     """Model for storing knowledge base articles and solutions."""
 
     __tablename__ = "knowledge_base"
@@ -190,7 +190,7 @@ class KnowledgeBase(Base):
     )
 
 
-class AuditLog(Base):
+class AuditLog(Base):  # type: ignore
     """Model for audit logging."""
 
     __tablename__ = "audit_logs"

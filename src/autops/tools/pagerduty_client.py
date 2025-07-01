@@ -88,7 +88,7 @@ class PagerDutyClient:
             try:
                 response = self.session.list_all("incidents", params=params)
 
-                incidents_data = {
+                incidents_data: Dict[str, Any] = {
                     "service": service_name,
                     "query_time": datetime.now().isoformat(),
                     "incidents": [],
@@ -175,12 +175,12 @@ class PagerDutyClient:
             # Look for exact match first
             for service in services:
                 if service.get("name", "").lower() == service_name.lower():
-                    return service.get("id")
+                    return str(service.get("id")) if service.get("id") else None
 
             # Look for partial match
             for service in services:
                 if service_name.lower() in service.get("name", "").lower():
-                    return service.get("id")
+                    return str(service.get("id")) if service.get("id") else None
 
             self.logger.warning("Service not found in PagerDuty", service=service_name)
             return None
@@ -223,7 +223,7 @@ class PagerDutyClient:
             try:
                 response = self.session.list_all("oncalls", params=params)
 
-                oncall_data = {
+                oncall_data: Dict[str, Any] = {
                     "service": service_name,
                     "query_time": datetime.now().isoformat(),
                     "oncall_users": [],
@@ -321,7 +321,7 @@ class PagerDutyClient:
             try:
                 response = self.session.list_all("incidents", params=params)
 
-                incidents_data = {
+                incidents_data: Dict[str, Any] = {
                     "service": service_name,
                     "days": days,
                     "query_time": datetime.now().isoformat(),

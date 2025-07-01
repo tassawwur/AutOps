@@ -108,7 +108,8 @@ async def slack_events(
         channel_id = event.get("channel")
 
         # Acknowledge the request immediately and run the workflow in the background
-        background_tasks.add_task(run_autops_workflow, user_text, channel_id)
+        if channel_id:
+            background_tasks.add_task(run_autops_workflow, user_text, channel_id)
 
         return {"status": "ok"}
 
@@ -138,7 +139,8 @@ async def slack_slash_command(
 
     # Acknowledge immediately with a processing message
     # Run the actual workflow in the background
-    background_tasks.add_task(run_autops_workflow, text, channel_id)
+    if background_tasks and channel_id:
+        background_tasks.add_task(run_autops_workflow, text, channel_id)
 
     return {
         "response_type": "in_channel",
