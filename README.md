@@ -488,3 +488,21 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 **Made with ❤️ by the AutOps community**
 
 *AutOps - Because your infrastructure deserves an AI teammate.*
+
+## Development Environment Setup
+
+### Code Formatting
+This project uses Black for code formatting. **Important:** The CI environment uses Black 23.12.1 as specified in `pyproject.toml`. To ensure compatibility:
+
+```bash
+# Install the exact Black version used in CI
+pip install black==23.12.1
+
+# Format code
+black src tests
+
+# Check formatting
+black --check src tests
+```
+
+**Note:** Different Black versions may format code differently. Always use the version specified in `pyproject.toml` to avoid CI formatting failures.

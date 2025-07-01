@@ -47,7 +47,7 @@ class PagerDutyClient:
         wait=wait_exponential(multiplier=1, min=4, max=10),
         retry=retry_if_exception_type(pdpyras.PDClientError),
     )
-    def get_active_incidents(self, service_name: str = None) -> Dict[str, Any]:
+    def get_active_incidents(self, service_name: Optional[str] = None) -> Dict[str, Any]:
         """
         Get active incidents from PagerDuty, optionally filtered by service.
 
@@ -194,7 +194,7 @@ class PagerDutyClient:
         wait=wait_exponential(multiplier=1, min=4, max=10),
         retry=retry_if_exception_type(pdpyras.PDClientError),
     )
-    def get_oncall_users(self, service_name: str = None) -> Dict[str, Any]:
+    def get_oncall_users(self, service_name: Optional[str] = None) -> Dict[str, Any]:
         """
         Get current on-call users, optionally filtered by service.
 
@@ -283,7 +283,7 @@ class PagerDutyClient:
         retry=retry_if_exception_type(pdpyras.PDClientError),
     )
     def get_recent_incidents(
-        self, service_name: str = None, days: int = 7
+        self, service_name: Optional[str] = None, days: int = 7
     ) -> Dict[str, Any]:
         """
         Get recent incidents from PagerDuty.
@@ -530,7 +530,14 @@ class PagerDutyClient:
     def get_on_call_schedule(
         self, service_name: Optional[str] = None
     ) -> Dict[str, Any]:
+        """Get on-call schedule for service."""
         # Implementation of get_on_call_schedule method
+        logger.info(f"MOCK: Fetching on-call schedule for '{service_name}'")
+        return {
+            "service": service_name or "all",
+            "schedule": "mock_schedule_data",
+            "current_oncall": "mock_user",
+        }
         pass
 
 
@@ -547,12 +554,12 @@ def get_pagerduty_client() -> PagerDutyClient:
 
 
 # Backward compatibility functions
-def get_active_incidents(service_name: str = None) -> Dict[str, Any]:
+def get_active_incidents(service_name: Optional[str] = None) -> Dict[str, Any]:
     """Convenience function for backward compatibility."""
     return get_pagerduty_client().get_active_incidents(service_name)
 
 
-def get_oncall_users(service_name: str = None) -> Dict[str, Any]:
+def get_oncall_users(service_name: Optional[str] = None) -> Dict[str, Any]:
     """Convenience function for backward compatibility."""
     return get_pagerduty_client().get_oncall_users(service_name)
 
