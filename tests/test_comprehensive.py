@@ -1,5 +1,6 @@
 """
 Comprehensive test suite for AutOps agents and tools.
+This file tests the complete workflow from query understanding to response generation.
 """
 
 import pytest
