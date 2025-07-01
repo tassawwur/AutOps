@@ -83,7 +83,9 @@ async def run_autops_workflow(text: str, channel_id: str) -> None:
 
 
 @router.post("/slack/events")
-async def slack_events(request: Request, background_tasks: BackgroundTasks) -> Dict[str, Any]:
+async def slack_events(
+    request: Request, background_tasks: BackgroundTasks
+) -> Dict[str, Any]:
     # Verify the request came from Slack
     body_bytes = await request.body()
     timestamp = request.headers.get("X-Slack-Request-Timestamp", "")

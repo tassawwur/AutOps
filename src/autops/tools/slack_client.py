@@ -214,7 +214,11 @@ class SlackClient:
         retry=retry_if_exception_type(SlackApiError),
     )
     def update_message(
-        self, channel: str, ts: str, text: Optional[str] = None, blocks: Optional[List[Dict[str, Any]]] = None
+        self,
+        channel: str,
+        ts: str,
+        text: Optional[str] = None,
+        blocks: Optional[List[Dict[str, Any]]] = None,
     ) -> Dict[str, Any]:
         """
         Update an existing message.
@@ -369,7 +373,11 @@ class MockSlackClient:
         self.logger.info("Mock Slack client initialized")
 
     def post_message(
-        self, channel: str, text: Optional[str] = None, blocks: Optional[List[Dict[str, Any]]] = None, **kwargs: Any
+        self,
+        channel: str,
+        text: Optional[str] = None,
+        blocks: Optional[List[Dict[str, Any]]] = None,
+        **kwargs: Any,
     ) -> Dict[str, Any]:
         """Mock posting a message to Slack."""
         print("\n" + "=" * 50)
@@ -389,7 +397,11 @@ class MockSlackClient:
         return self.post_message(channel, text, actions)
 
     def update_message(
-        self, channel: str, ts: str, text: Optional[str] = None, blocks: Optional[List[Dict[str, Any]]] = None
+        self,
+        channel: str,
+        ts: str,
+        text: Optional[str] = None,
+        blocks: Optional[List[Dict[str, Any]]] = None,
     ) -> Dict[str, Any]:
         """Mock updating a message."""
         return self.post_message(channel, text, blocks)

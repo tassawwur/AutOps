@@ -10,7 +10,9 @@ logger = logging.getLogger(__name__)
 client = openai.OpenAI(api_key=settings.openai_api_key)
 
 
-def generate_incident_remediation_message(analysis_result: Dict[str, Any]) -> List[Dict[str, Any]]:
+def generate_incident_remediation_message(
+    analysis_result: Dict[str, Any]
+) -> List[Dict[str, Any]]:
     """
     Creates a Slack message with interactive buttons for remediation.
     """
@@ -54,9 +56,12 @@ def generate_incident_remediation_message(analysis_result: Dict[str, Any]) -> Li
     ]
 
 
-def generate_response(query: str, verification_results: Dict[str, Any], 
-                     tool_execution_results: Optional[List[Dict[str, Any]]] = None,
-                     include_metrics: bool = True) -> Optional[str]:
+def generate_response(
+    query: str,
+    verification_results: Dict[str, Any],
+    tool_execution_results: Optional[List[Dict[str, Any]]] = None,
+    include_metrics: bool = True,
+) -> Optional[str]:
     """
     Uses an LLM to generate a natural language response based on the
     execution result.

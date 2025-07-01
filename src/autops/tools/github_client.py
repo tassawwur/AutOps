@@ -22,7 +22,9 @@ from ..utils.logging import log_error, log_agent_execution
 class GitHubClient:
     """Production-ready GitHub client with comprehensive functionality."""
 
-    def __init__(self, token: Optional[str] = None, owner: Optional[str] = None) -> None:
+    def __init__(
+        self, token: Optional[str] = None, owner: Optional[str] = None
+    ) -> None:
         """
         Initialize GitHub client.
 
@@ -197,7 +199,10 @@ class GitHubClient:
                 # Get workflow summary
                 try:
                     recent_runs = list(workflow_runs[:10])
-                    summary: Dict[str, Any] = {"total_runs": len(recent_runs), "by_conclusion": {}}
+                    summary: Dict[str, Any] = {
+                        "total_runs": len(recent_runs),
+                        "by_conclusion": {},
+                    }
 
                     for run in recent_runs:
                         conclusion = run.conclusion or "in_progress"

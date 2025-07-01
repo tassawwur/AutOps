@@ -480,10 +480,13 @@ class PagerDutyClient:
             log_error(self.logger, e, {"title": title, "service": service_name})
             raise PagerDutyAPIError(f"Failed to create incident: {str(e)}")
 
-    def get_service_metrics(self, service_name: Optional[str] = None,
-                           time_range: str = "24h") -> Dict[str, Any]:
+    def get_service_metrics(
+        self, service_name: Optional[str] = None, time_range: str = "24h"
+    ) -> Dict[str, Any]:
         """Get service metrics and analytics."""
-        logger.info(f"MOCK: Fetching service metrics for '{service_name}' with time range '{time_range}'")
+        logger.info(
+            f"MOCK: Fetching service metrics for '{service_name}' with time range '{time_range}'"
+        )
         return {
             "service": service_name or "all",
             "time_range": time_range,
@@ -491,19 +494,22 @@ class PagerDutyClient:
                 "total_incidents": 12,
                 "mean_time_to_acknowledge": "8 minutes",
                 "mean_time_to_resolve": "45 minutes",
-                "escalation_rate": "15%"
+                "escalation_rate": "15%",
             },
             "trends": {
                 "incidents_this_period": 12,
                 "incidents_previous_period": 8,
-                "change_percentage": "+50%"
-            }
+                "change_percentage": "+50%",
+            },
         }
 
-    def get_incident_analytics(self, service_name: Optional[str] = None,
-                              time_range: str = "7d") -> Dict[str, Any]:
+    def get_incident_analytics(
+        self, service_name: Optional[str] = None, time_range: str = "7d"
+    ) -> Dict[str, Any]:
         """Get incident analytics and patterns."""
-        logger.info(f"MOCK: Fetching incident analytics for '{service_name}' over '{time_range}'")
+        logger.info(
+            f"MOCK: Fetching incident analytics for '{service_name}' over '{time_range}'"
+        )
         return {
             "service": service_name or "all",
             "time_range": time_range,
@@ -513,14 +519,16 @@ class PagerDutyClient:
                 "by_service": {
                     "payment-service": 12,
                     "user-service": 8,
-                    "notification-service": 8
+                    "notification-service": 8,
                 },
                 "common_keywords": ["timeout", "database", "high load"],
-                "peak_hours": ["14:00-16:00", "09:00-11:00"]
-            }
+                "peak_hours": ["14:00-16:00", "09:00-11:00"],
+            },
         }
 
-    def get_on_call_schedule(self, service_name: Optional[str] = None) -> Dict[str, Any]:
+    def get_on_call_schedule(
+        self, service_name: Optional[str] = None
+    ) -> Dict[str, Any]:
         # Implementation of get_on_call_schedule method
         pass
 

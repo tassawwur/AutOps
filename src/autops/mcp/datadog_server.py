@@ -303,7 +303,7 @@ async def handle_read_resource(uri: str) -> str:
         services = {
             "services": [
                 "payment-service",
-                "user-auth-service", 
+                "user-auth-service",
                 "notification-service",
                 "order-processing-service",
             ],
@@ -316,8 +316,16 @@ async def handle_read_resource(uri: str) -> str:
         # Return mock dashboard list
         dashboards = {
             "dashboards": [
-                {"id": "dashboard-1", "name": "Service Overview", "url": "https://app.datadoghq.com/dashboard/abc-123"},
-                {"id": "dashboard-2", "name": "Infrastructure Metrics", "url": "https://app.datadoghq.com/dashboard/def-456"},
+                {
+                    "id": "dashboard-1",
+                    "name": "Service Overview",
+                    "url": "https://app.datadoghq.com/dashboard/abc-123",
+                },
+                {
+                    "id": "dashboard-2",
+                    "name": "Infrastructure Metrics",
+                    "url": "https://app.datadoghq.com/dashboard/def-456",
+                },
             ],
             "total": 2,
         }

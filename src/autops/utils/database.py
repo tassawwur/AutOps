@@ -225,13 +225,15 @@ class DatabaseManager:
         """Initialize the database connection."""
         try:
             self.engine = create_engine(database_url, echo=config.DEBUG)
-            
+
             # Create all tables
             Base.metadata.create_all(bind=self.engine)
-            
+
             # Create sessionmaker
-            self.SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
-            
+            self.SessionLocal = sessionmaker(
+                autocommit=False, autoflush=False, bind=self.engine
+            )
+
             logger.info("Database initialized successfully")
         except Exception as e:
             logger.error(f"Failed to initialize database: {e}")
@@ -242,11 +244,11 @@ class DatabaseManager:
         try:
             if not self.engine:
                 return {"status": "unhealthy", "message": "Database not initialized"}
-            
+
             # Try to connect and execute a simple query
             with self.engine.connect() as conn:
                 conn.execute("SELECT 1")
-            
+
             return {"status": "healthy", "message": "Database connection successful"}
         except Exception as e:
             logger.error(f"Database health check failed: {e}")
@@ -257,7 +259,7 @@ class DatabaseManager:
         """Get a database session with automatic cleanup."""
         if not self.SessionLocal:
             raise RuntimeError("Database not initialized")
-        
+
         session = self.SessionLocal()
         try:
             yield session
@@ -419,9 +421,7 @@ class IncidentRepository:
     ) -> bool:
         """Mark incident as resolved."""
         incident = (
-            session.query(Incident)
-            .filter(Incident.incident_id == incident_id)
-            .first()
+            session.query(Incident).filter(Incident.incident_id == incident_id).first()
         )
 
         if incident:
@@ -488,16 +488,14 @@ class KnowledgeBaseRepository:
                 KnowledgeBase.service_names.contains([service_name])
             )
 
-        return (
-            search_query.order_by(desc(KnowledgeBase.usage_count))
-            .limit(limit)
-            .all()
-        )
+        return search_query.order_by(desc(KnowledgeBase.usage_count)).limit(limit).all()
 
     @staticmethod
     def increment_usage(session: Session, article_id: int) -> None:
         """Increment usage count for an article."""
-        article = session.query(KnowledgeBase).filter(KnowledgeBase.id == article_id).first()
+        article = (
+            session.query(KnowledgeBase).filter(KnowledgeBase.id == article_id).first()
+        )
         if article:
             article.usage_count += 1
 
