@@ -381,7 +381,5 @@ class TestPerformance:
         assert memory_growth < 50 * 1024 * 1024
 
 
-# Note: This file has been formatted for CI/CD compatibility with Unix line endings
-
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
