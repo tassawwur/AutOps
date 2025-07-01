@@ -94,7 +94,10 @@ class QueryUnderstandingAgent:
                 response_format={"type": "json_object"},
                 temperature=0,
             )
-            return response.choices[0].message.content
+            content = response.choices[0].message.content
+            if not content:
+                raise QueryUnderstandingError("Empty response from OpenAI API")
+            return content
         except openai.RateLimitError as e:
             self.logger.warning("OpenAI rate limit hit, retrying", error=str(e))
             raise

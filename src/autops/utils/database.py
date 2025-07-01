@@ -310,7 +310,7 @@ class QueryRepository:
             query.status = status
             for key, value in kwargs.items():
                 if hasattr(query, key):
-                    setattr(query, key, value)
+                    setattr(query, key, value)  # type: ignore
             return True
         return False
 
@@ -423,19 +423,19 @@ class IncidentRepository:
         )
 
         if incident:
-            incident.status = "resolved"
-            incident.resolved_at = datetime.now()
-            incident.auto_resolved = auto_resolved
+            incident.status = "resolved"  # type: ignore
+            incident.resolved_at = datetime.now()  # type: ignore
+            incident.auto_resolved = auto_resolved  # type: ignore
 
             if resolution_actions:
-                incident.resolution_actions = resolution_actions
+                incident.resolution_actions = resolution_actions  # type: ignore
 
             # Calculate resolution time
             if incident.created_at and incident.resolved_at:
                 resolution_time = (
                     incident.resolved_at - incident.created_at
                 ).total_seconds() / 60
-                incident.resolution_time_minutes = int(resolution_time)
+                incident.resolution_time_minutes = int(resolution_time)  # type: ignore
 
             return True
 
@@ -495,7 +495,7 @@ class KnowledgeBaseRepository:
             session.query(KnowledgeBase).filter(KnowledgeBase.id == article_id).first()
         )
         if article:
-            article.usage_count += 1
+            article.usage_count += 1  # type: ignore
 
 
 def initialize_database() -> None:

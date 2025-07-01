@@ -335,7 +335,7 @@ async def handle_read_resource(uri: str) -> str:
 
 
 # Server management
-async def run(self) -> None:
+async def run_datadog_server() -> None:
     """Run the DataDog MCP server."""
     logger.info("Starting DataDog MCP Server")
     try:
@@ -351,7 +351,7 @@ async def run(self) -> None:
 async def main() -> None:
     """Main entry point for the DataDog MCP server."""
     server = DataDogMCPServer()
-    await server.run()
+    await run_datadog_server()
 
 
 if __name__ == "__main__":

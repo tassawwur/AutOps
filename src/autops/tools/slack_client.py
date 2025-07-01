@@ -268,7 +268,7 @@ class SlackClient:
                 ts=ts,
             )
 
-            return response.data
+            return response.data  # type: ignore
 
         except SlackApiError as e:
             self.logger.warning("Slack API error, retrying", error=str(e))
@@ -340,12 +340,12 @@ class SlackClient:
         Returns:
             List of Slack blocks
         """
-        fields = []
+        fields: List[Dict[str, str]] = []
         for key, value in details.items():
             fields.append(
                 {
                     "type": "mrkdwn",
-                    "text": f"*{key.replace('_', ' ').title()}:*\n{value}",
+                    "text": f"*{key.replace('_', ' ').title()}:*\n{str(value)}",
                 }
             )
 
@@ -441,7 +441,7 @@ def get_slack_client() -> Union[SlackClient, MockSlackClient]:
             _slack_client = MockSlackClient()
         else:
             _slack_client = SlackClient()
-    return _slack_client
+    return _slack_client  # type: ignore
 
 
 # For backward compatibility
