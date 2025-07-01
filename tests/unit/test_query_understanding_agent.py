@@ -1,6 +1,7 @@
 """
 Unit tests for Query Understanding Agent.
 """
+
 import pytest
 from unittest.mock import Mock, patch
 import json

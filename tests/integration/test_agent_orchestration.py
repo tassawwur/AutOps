@@ -34,15 +34,16 @@ class TestAgentOrchestration:
         context = {"user": "test_user", "channel": "general"}
 
         # Mock all the agent responses
-        with patch.object(
-            orchestrator.query_agent, "understand_query"
-        ) as mock_understand, patch.object(
-            orchestrator.planning_agent, "create_plan"
-        ) as mock_plan, patch.object(
-            orchestrator.execution_agent, "execute_step"
-        ) as mock_execute, patch.object(
-            orchestrator.response_agent, "generate_response"
-        ) as mock_response:
+        with (
+            patch.object(
+                orchestrator.query_agent, "understand_query"
+            ) as mock_understand,
+            patch.object(orchestrator.planning_agent, "create_plan") as mock_plan,
+            patch.object(orchestrator.execution_agent, "execute_step") as mock_execute,
+            patch.object(
+                orchestrator.response_agent, "generate_response"
+            ) as mock_response,
+        ):
             # Mock query understanding
             mock_understand.return_value = {
                 "intent": "check_ci_status",
@@ -98,15 +99,16 @@ class TestAgentOrchestration:
         query = "Check if there are any performance anomalies and fix them"
         context = {"user": "admin_user", "channel": "alerts"}
 
-        with patch.object(
-            orchestrator.query_agent, "understand_query"
-        ) as mock_understand, patch.object(
-            orchestrator.planning_agent, "create_plan"
-        ) as mock_plan, patch.object(
-            orchestrator.execution_agent, "execute_step"
-        ) as mock_execute, patch.object(
-            orchestrator.response_agent, "generate_response"
-        ) as mock_response:
+        with (
+            patch.object(
+                orchestrator.query_agent, "understand_query"
+            ) as mock_understand,
+            patch.object(orchestrator.planning_agent, "create_plan") as mock_plan,
+            patch.object(orchestrator.execution_agent, "execute_step") as mock_execute,
+            patch.object(
+                orchestrator.response_agent, "generate_response"
+            ) as mock_response,
+        ):
             mock_understand.return_value = {
                 "intent": "detect_and_remediate_anomalies",
                 "entities": {"metric_type": "performance"},
@@ -168,11 +170,12 @@ class TestAgentOrchestration:
         query = "Invalid query that can't be planned"
         context = {"user": "test_user", "channel": "general"}
 
-        with patch.object(
-            orchestrator.query_agent, "understand_query"
-        ) as mock_understand, patch.object(
-            orchestrator.planning_agent, "create_plan"
-        ) as mock_plan:
+        with (
+            patch.object(
+                orchestrator.query_agent, "understand_query"
+            ) as mock_understand,
+            patch.object(orchestrator.planning_agent, "create_plan") as mock_plan,
+        ):
             mock_understand.return_value = {
                 "intent": "unknown",
                 "entities": {},
@@ -192,13 +195,13 @@ class TestAgentOrchestration:
         query = "Check CI status"
         context = {"user": "test_user", "channel": "general"}
 
-        with patch.object(
-            orchestrator.query_agent, "understand_query"
-        ) as mock_understand, patch.object(
-            orchestrator.planning_agent, "create_plan"
-        ) as mock_plan, patch.object(
-            orchestrator.execution_agent, "execute_step"
-        ) as mock_execute:
+        with (
+            patch.object(
+                orchestrator.query_agent, "understand_query"
+            ) as mock_understand,
+            patch.object(orchestrator.planning_agent, "create_plan") as mock_plan,
+            patch.object(orchestrator.execution_agent, "execute_step") as mock_execute,
+        ):
             mock_understand.return_value = {
                 "intent": "check_ci_status",
                 "entities": {"repository": "test_repo"},
@@ -231,15 +234,16 @@ class TestAgentOrchestration:
             ("List open incidents", {"user": "user3", "channel": "alerts"}),
         ]
 
-        with patch.object(
-            orchestrator.query_agent, "understand_query"
-        ) as mock_understand, patch.object(
-            orchestrator.planning_agent, "create_plan"
-        ) as mock_plan, patch.object(
-            orchestrator.execution_agent, "execute_step"
-        ) as mock_execute, patch.object(
-            orchestrator.response_agent, "generate_response"
-        ) as mock_response:
+        with (
+            patch.object(
+                orchestrator.query_agent, "understand_query"
+            ) as mock_understand,
+            patch.object(orchestrator.planning_agent, "create_plan") as mock_plan,
+            patch.object(orchestrator.execution_agent, "execute_step") as mock_execute,
+            patch.object(
+                orchestrator.response_agent, "generate_response"
+            ) as mock_response,
+        ):
             # Mock successful responses for all queries
             mock_understand.return_value = {
                 "intent": "test",
@@ -271,15 +275,16 @@ class TestAgentOrchestration:
         query = "Deploy to production"
         context = {"user": "dev_user", "channel": "deployments"}
 
-        with patch.object(
-            orchestrator.query_agent, "understand_query"
-        ) as mock_understand, patch.object(
-            orchestrator.planning_agent, "create_plan"
-        ) as mock_plan, patch.object(
-            orchestrator.execution_agent, "execute_step"
-        ) as mock_execute, patch.object(
-            orchestrator.response_agent, "generate_response"
-        ) as mock_response:
+        with (
+            patch.object(
+                orchestrator.query_agent, "understand_query"
+            ) as mock_understand,
+            patch.object(orchestrator.planning_agent, "create_plan") as mock_plan,
+            patch.object(orchestrator.execution_agent, "execute_step") as mock_execute,
+            patch.object(
+                orchestrator.response_agent, "generate_response"
+            ) as mock_response,
+        ):
             mock_understand.return_value = {
                 "intent": "deploy",
                 "entities": {"environment": "production"},
@@ -323,13 +328,17 @@ class TestAgentOrchestration:
         query = "What caused the outage last Tuesday?"
         context = {"user": "sre_user", "channel": "incidents"}
 
-        with patch.object(
-            orchestrator.query_agent, "understand_query"
-        ) as mock_understand, patch.object(
-            orchestrator.info_retrieval_agent, "search_knowledge_base"
-        ) as mock_search, patch.object(
-            orchestrator.response_agent, "generate_response"
-        ) as mock_response:
+        with (
+            patch.object(
+                orchestrator.query_agent, "understand_query"
+            ) as mock_understand,
+            patch.object(
+                orchestrator.info_retrieval_agent, "search_knowledge_base"
+            ) as mock_search,
+            patch.object(
+                orchestrator.response_agent, "generate_response"
+            ) as mock_response,
+        ):
             mock_understand.return_value = {
                 "intent": "investigate_outage",
                 "entities": {"timeframe": "last Tuesday"},

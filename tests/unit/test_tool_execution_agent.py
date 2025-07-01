@@ -54,7 +54,7 @@ class TestToolExecutionAgent:
         """Test execution with missing parameters."""
         step = {
             "action": "check_ci_status",
-            "tool": "github"
+            "tool": "github",
             # Missing parameters
         }
 
@@ -217,9 +217,10 @@ class TestToolExecutionAgent:
             },
         ]
 
-        with patch.object(agent, "_execute_github_action") as mock_github, patch.object(
-            agent, "_execute_datadog_action"
-        ) as mock_datadog:
+        with (
+            patch.object(agent, "_execute_github_action") as mock_github,
+            patch.object(agent, "_execute_datadog_action") as mock_datadog,
+        ):
             mock_github.return_value = {
                 "status": "success",
                 "data": {"ci_status": "passed"},

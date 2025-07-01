@@ -1,6 +1,7 @@
 """
 Comprehensive test suite for AutOps agents and tools.
 """
+
 import pytest
 import asyncio
 from unittest.mock import Mock, patch, AsyncMock
@@ -240,9 +241,9 @@ class TestVerificationAgent:
         with patch.object(agent, "client") as mock_client:
             mock_response = Mock()
             mock_response.choices = [Mock()]
-            mock_response.choices[
-                0
-            ].message.content = '{"overall_success": true, "confidence_score": 0.9, "insights": {"successes": ["Data gathered"], "failures": [], "unexpected_findings": []}, "recommendations": {"immediate_actions": [], "future_improvements": []}, "risk_assessment": {"risk_level": "low", "risk_factors": []}}'
+            mock_response.choices[0].message.content = (
+                '{"overall_success": true, "confidence_score": 0.9, "insights": {"successes": ["Data gathered"], "failures": [], "unexpected_findings": []}, "recommendations": {"immediate_actions": [], "future_improvements": []}, "risk_assessment": {"risk_level": "low", "risk_factors": []}}'
+            )
             mock_client.chat.completions.create.return_value = mock_response
 
             result = await agent.reflect_on_workflow(plan, execution_results)
