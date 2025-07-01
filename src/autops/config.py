@@ -1,6 +1,7 @@
 """
 Configuration management for AutOps.
 """
+
 import os
 from enum import Enum
 from typing import Optional, Any
@@ -148,10 +149,14 @@ class Settings(BaseSettings):
     @validator("log_level")
     def validate_log_level(cls, v: str) -> str:
         # Strip whitespace and remove comments
-        cleaned_value = v.strip().split('#')[0].strip() if isinstance(v, str) else str(v)
+        cleaned_value = (
+            v.strip().split("#")[0].strip() if isinstance(v, str) else str(v)
+        )
         valid_levels = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
         if cleaned_value.upper() not in valid_levels:
-            raise ConfigurationError(f"Invalid log level: {cleaned_value}. Valid options: {valid_levels}")
+            raise ConfigurationError(
+                f"Invalid log level: {cleaned_value}. Valid options: {valid_levels}"
+            )
         return cleaned_value.upper()
 
     @validator("allowed_hosts", pre=True)
