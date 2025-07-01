@@ -28,7 +28,7 @@ from ..config import settings
 
 
 # Create the base class for SQLAlchemy models
-Base = declarative_base()  # type: ignore
+Base = declarative_base()
 logger = structlog.get_logger(__name__)
 
 
@@ -307,7 +307,7 @@ class QueryRepository:
         """Update query status and other fields."""
         query = session.query(Query).filter(Query.query_id == query_id).first()
         if query:
-            query.status = status
+            query.status = status  # type: ignore
             for key, value in kwargs.items():
                 if hasattr(query, key):
                     setattr(query, key, value)  # type: ignore
