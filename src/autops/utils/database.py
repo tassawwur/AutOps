@@ -1,7 +1,6 @@
 """
 Database utilities and models for AutOps.
 """
-import os
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any, Generator
 from sqlalchemy import (
@@ -17,7 +16,6 @@ from sqlalchemy import (
     Index,
     desc,
     or_,
-    func,
     Engine,
 )
 from sqlalchemy.ext.declarative import declarative_base, DeclarativeMeta
@@ -25,7 +23,7 @@ from sqlalchemy.orm import sessionmaker, Session, relationship
 from contextlib import contextmanager
 import structlog
 
-from ..config import settings, config
+from ..config import settings
 
 
 Base: DeclarativeMeta = declarative_base()
@@ -222,7 +220,7 @@ class DatabaseManager:
     def initialize(self, database_url: str) -> None:
         """Initialize the database connection."""
         try:
-            self.engine = create_engine(database_url, echo=config.DEBUG)
+            self.engine = create_engine(database_url, echo=settings.debug)
 
             # Create all tables
             Base.metadata.create_all(bind=self.engine)
