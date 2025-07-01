@@ -241,7 +241,7 @@ class DatadogClient:
                                 if point[1] is not None
                             ]
                             if values:
-                                metric_data = {  # type: ignore[dict-item]
+                                metric_data = {
                                     "has_data": True,
                                     "value": sum(values) / len(values),
                                     "data_points": len(values),
@@ -249,13 +249,13 @@ class DatadogClient:
                                     "min": min(values),
                                 }
 
-                    results["metrics"][metric] = metric_data  # type: ignore[index]
+                    results["metrics"][metric] = metric_data
 
                 except Exception as e:
                     self.logger.warning(
                         "Failed to fetch metric", metric=metric, error=str(e)
                     )
-                    results["metrics"][metric] = {"has_data": False, "error": str(e)}  # type: ignore[index]
+                    results["metrics"][metric] = {"has_data": False, "error": str(e)}
 
             # Log execution
             duration_ms = (time.time() - start_time) * 1000
@@ -396,12 +396,12 @@ class DatadogClient:
                             "status": monitor.overall_state,
                             "type": monitor.type,
                         }
-                        monitor_data["monitors"].append(monitor_info)  # type: ignore[attr-defined]
+                        monitor_data["monitors"].append(monitor_info)
 
                         # Count alerts by status
                         status = monitor.overall_state
-                        if status in monitor_data["alerts"]:  # type: ignore[operator]
-                            monitor_data["alerts"][status] += 1  # type: ignore[index]
+                        if status in monitor_data["alerts"]:
+                            monitor_data["alerts"][status] += 1
 
                 # Log execution
                 duration_ms = (time.time() - start_time) * 1000
