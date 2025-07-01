@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Request, BackgroundTasks, Form, Response, HTTPException
-from typing import Annotated, Dict, Any
+from typing import Annotated, Dict, Any, Optional
 import json
 import hmac
 import hashlib
@@ -115,11 +115,11 @@ async def slack_events(
 
 @router.post("/slack/slash")
 async def slack_slash_command(
-    command: Annotated[str, Form()] = None,
+    command: Annotated[Optional[str], Form()] = None,
     text: Annotated[str, Form()] = "",
-    channel_id: Annotated[str, Form()] = None,
-    user_id: Annotated[str, Form()] = None,
-    background_tasks: BackgroundTasks = None,
+    channel_id: Annotated[Optional[str], Form()] = None,
+    user_id: Annotated[Optional[str], Form()] = None,
+    background_tasks: Optional[BackgroundTasks] = None,
 ) -> Dict[str, Any]:
     """
     Handles Slack slash commands (e.g., /autops).

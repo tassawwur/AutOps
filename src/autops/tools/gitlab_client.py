@@ -27,7 +27,7 @@ class GitLabClient:
     Production-ready GitLab API client for CI/CD and repository operations.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.logger = get_logger(f"{__name__}.GitLabClient")
 
         # Initialize GitLab API client
@@ -206,7 +206,7 @@ class GitLabClient:
         retry=retry_if_exception_type(gitlab.exceptions.GitlabError),
     )
     def get_pipeline_status(
-        self, service_name: str, pipeline_id: str = None
+        self, service_name: str, pipeline_id: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Get pipeline status for a project.
@@ -425,7 +425,7 @@ def get_last_deployment(service_name: str) -> Dict[str, Any]:
     return get_gitlab_client().get_last_deployment(service_name)
 
 
-def get_pipeline_status(service_name: str, pipeline_id: str = None) -> Dict[str, Any]:
+def get_pipeline_status(service_name: str, pipeline_id: Optional[str] = None) -> Dict[str, Any]:
     """Convenience function for backward compatibility."""
     return get_gitlab_client().get_pipeline_status(service_name, pipeline_id)
 

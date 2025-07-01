@@ -4,7 +4,7 @@ Provides tools for querying DataDog metrics and monitoring data.
 """
 
 import asyncio
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from mcp.server.fastmcp import FastMCP
 from mcp.server.models import Tool
@@ -80,7 +80,7 @@ Status: {'✅ Normal' if float(metrics.get('error_rate', '0').rstrip('%')) < 5 e
         @mcp.tool("datadog_service_metrics")
         async def handle_service_metrics(
             service_name: str,
-            metrics: List[str] = None,
+            metrics: Optional[List[str]] = None,
             time_window_minutes: int = 60,
         ) -> List[TextContent]:
             """

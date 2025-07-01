@@ -30,7 +30,7 @@ logger = get_logger(__name__)
 class QueryUnderstandingAgent:
     """Enhanced Query Understanding Agent with production features."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.model = settings.openai_model
         self.logger = get_logger(f"{__name__}.QueryUnderstandingAgent")
 
