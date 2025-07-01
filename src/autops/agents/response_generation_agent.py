@@ -3,7 +3,6 @@ import json
 from ..config import settings
 from typing import Dict, List, Any, Optional
 import logging
-from openai import OpenAI
 
 logger = logging.getLogger(__name__)
 

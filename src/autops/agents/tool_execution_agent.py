@@ -1,5 +1,5 @@
 import json
-from typing import Dict, Any, Optional, Union
+from typing import Dict, Any, Optional
 from ..tools.github_client import github_client
 from ..agents.information_retrieval_agent import InformationRetrievalAgent
 from ..agents.planning_agent import analyze_context_and_suggest_fix

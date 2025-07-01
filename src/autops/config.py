@@ -6,7 +6,7 @@ import os
 from enum import Enum
 from typing import Optional, Any
 
-from pydantic import BaseModel, validator
+from pydantic import validator
 from pydantic_settings import BaseSettings
 
 from .utils.exceptions import ConfigurationError

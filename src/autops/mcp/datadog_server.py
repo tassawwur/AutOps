@@ -4,7 +4,6 @@ Provides tools for querying DataDog metrics and monitoring data.
 """
 
 import asyncio
-import json
 from typing import Any, Dict, List
 
 from mcp.server.fastmcp import FastMCP
@@ -13,8 +12,7 @@ from mcp.types import Resource, TextContent
 
 from ..tools.datadog_client import get_datadog_client
 from ..config import get_settings
-from ..utils.logging import get_logger, log_error
-from ..utils.exceptions import DatadogAPIError, ValidationError
+from ..utils.logging import get_logger
 
 # Initialize components
 settings = get_settings()

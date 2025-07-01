@@ -10,9 +10,6 @@ from tenacity import (
     retry_if_exception_type,
 )
 import structlog
-import json
-import logging
-import github
 
 from ..config import settings
 from ..utils.exceptions import GitHubAPIError, ValidationError
