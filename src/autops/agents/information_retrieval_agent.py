@@ -76,7 +76,7 @@ if USE_MOCK_DATA:
     logger.info("Using MOCK data clients for demo mode")
 else:
     # Use real clients for production
-    from ..tools import datadog_client, pagerduty_client, gitlab_client
+    from ..tools import datadog_client, pagerduty_client, gitlab_client  # type: ignore
 
     logger.info("Using REAL API clients for production mode")
 

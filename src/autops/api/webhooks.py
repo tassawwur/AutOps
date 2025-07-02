@@ -50,7 +50,7 @@ async def run_autops_workflow(text: str, channel_id: str) -> None:
     try:
         # Step 1: Understand the query
         logger.info(f"Received query: {text}")
-        structured_query = await get_structured_query(text)
+        structured_query = get_structured_query(text)
 
         # Step 2: Create a plan
         plan = create_plan(structured_query)
@@ -71,17 +71,25 @@ async def run_autops_workflow(text: str, channel_id: str) -> None:
                 break  # Exit the loop on failure
 
         # Step 4: Generate a response
-        final_response_message = generate_response(plan, results)
+        if results and results[-1].get("status") == "completed":
+            verification_result = {
+                "status": "completed",
+                "result": results[-1].get("result"),
+            }
+        else:
+            verification_result = {"status": "failed", "error": "Execution failed"}
+
+        final_response_message = generate_response(text, verification_result)
 
         # Step 5: Send the response back to Slack
         client = slack_client()
-        await client.post_message(channel_id, text=final_response_message)
+        client.post_message(channel_id, text=final_response_message)
 
     except Exception as e:
         logger.error(f"An error occurred during AutOps workflow: {e}", exc_info=True)
         error_message = f"Sorry, I encountered an error: {e}"
         client = slack_client()
-        await client.post_message(channel_id, text=error_message)
+        client.post_message(channel_id, text=error_message)
 
 
 @router.post("/slack/events")

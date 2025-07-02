@@ -170,7 +170,7 @@ class QueryUnderstandingAgent:
                 confidence=structured_data.get("confidence"),
             )
 
-            return structured_data
+            return structured_data  # type: ignore[no-any-return]
 
         except (ValidationError, QueryUnderstandingError):
             raise

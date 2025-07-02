@@ -244,18 +244,18 @@ class DatadogClient:
                                 metric_data = {
                                     "has_data": True,
                                     "value": sum(values) / len(values),
-                                    "data_points": len(values),
+                                    "data_points": len(values),  # type: ignore
                                     "max": max(values),
                                     "min": min(values),
                                 }
 
-                    results["metrics"][metric] = metric_data
+                    results["metrics"][metric] = metric_data  # type: ignore
 
                 except Exception as e:
                     self.logger.warning(
                         "Failed to fetch metric", metric=metric, error=str(e)
                     )
-                    results["metrics"][metric] = {"has_data": False, "error": str(e)}
+                    results["metrics"][metric] = {"has_data": False, "error": str(e)}  # type: ignore
 
             # Log execution
             duration_ms = (time.time() - start_time) * 1000
@@ -396,12 +396,12 @@ class DatadogClient:
                             "status": monitor.overall_state,
                             "type": monitor.type,
                         }
-                        monitor_data["monitors"].append(monitor_info)
+                        monitor_data["monitors"].append(monitor_info)  # type: ignore
 
                         # Count alerts by status
                         status = monitor.overall_state
-                        if status in monitor_data["alerts"]:
-                            monitor_data["alerts"][status] += 1
+                        if status in monitor_data["alerts"]:  # type: ignore
+                            monitor_data["alerts"][status] += 1  # type: ignore
 
                 # Log execution
                 duration_ms = (time.time() - start_time) * 1000

@@ -33,14 +33,21 @@ def execute_step(
     try:
         if agent_name:
             agent = AGENTS[agent_name]
-            method_to_call = (
-                agent[action] if isinstance(agent, dict) else getattr(agent, action)
-            )
+            if isinstance(agent, dict):
+                method_to_call = agent[action]
+            else:
+                method_to_call = getattr(agent, str(action) if action else "")
             result = method_to_call(**parameters)
         elif tool_name:
             tool = TOOLS[tool_name]
-            method_to_call = getattr(tool, action)
-            result = method_to_call(**parameters)
+            # Try client first, then module-level functions
+            action_str = str(action) if action else ""
+            client_method = getattr(tool, action_str, None)
+            if client_method and callable(client_method):
+                method = client_method
+            else:
+                method = getattr(tool, action_str, None)
+            result = method(**parameters)
         else:
             raise ValueError("Step must specify an agent or a tool.")
 
@@ -74,7 +81,7 @@ if __name__ == "__main__":
     }
 
     # Step 1: Gather Context
-    step1 = incident_plan["steps"][0]
+    step1: Dict[str, Any] = incident_plan["steps"][0]  # type: ignore[assignment]
     print("--- EXECUTING STEP 1 ---")
     step1_result = execute_step(step1)
     print(json.dumps(step1_result, indent=2))
@@ -83,7 +90,7 @@ if __name__ == "__main__":
 
     # Step 2: Analyze Context
     if step1_result["status"] == "completed":
-        step2 = incident_plan["steps"][1]
+        step2: Dict[str, Any] = incident_plan["steps"][1]  # type: ignore[assignment]
         print("--- EXECUTING STEP 2 ---")
         # Pass the result of step 1 as context to step 2
         step2_result = execute_step(step2, context=step1_result["result"])

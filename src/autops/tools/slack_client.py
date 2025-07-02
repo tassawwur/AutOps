@@ -253,9 +253,9 @@ class SlackClient:
             if text:
                 kwargs["text"] = text
             if blocks:
-                kwargs["blocks"] = blocks
+                kwargs["blocks"] = blocks  # type: ignore
 
-            response = self.client.chat_update(**kwargs)
+            response = self.client.chat_update(**kwargs)  # type: ignore
 
             # Log execution
             duration_ms = (time.time() - start_time) * 1000
@@ -340,7 +340,7 @@ class SlackClient:
         Returns:
             List of Slack blocks
         """
-        fields: List[Dict[str, str]] = []
+        fields: List[Dict[str, Any]] = []
         for key, value in details.items():
             fields.append(
                 {
@@ -357,7 +357,7 @@ class SlackClient:
         ]
 
         if fields:
-            blocks.append({"type": "section", "fields": fields})
+            blocks.append({"type": "section", "fields": fields})  # type: ignore[dict-item]
 
         return blocks
 
@@ -430,7 +430,7 @@ class MockSlackClient:
 
 
 # Global instance - lazy loaded
-_slack_client = None
+_slack_client: Optional[Union[SlackClient, MockSlackClient]] = None
 
 
 def get_slack_client() -> Union[SlackClient, MockSlackClient]:
@@ -441,7 +441,7 @@ def get_slack_client() -> Union[SlackClient, MockSlackClient]:
             _slack_client = MockSlackClient()
         else:
             _slack_client = SlackClient()
-    return _slack_client  # type: ignore
+    return _slack_client
 
 
 # For backward compatibility

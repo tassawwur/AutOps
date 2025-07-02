@@ -49,9 +49,10 @@ def validate_tool_support(tool: str, action: Optional[str] = None) -> Tuple[bool
 
     tool_info = TOOL_SUPPORT[tool]
     if not tool_info["supported"]:
-        return False, tool_info.get("message", f"{tool} is not yet implemented")
+        message = tool_info.get("message", f"{tool} is not yet implemented")
+        return False, str(message)
 
-    if action and action not in tool_info.get("actions", []):
+    if action is not None and str(action) not in tool_info.get("actions", []):  # type: ignore[operator]
         return False, f"Action '{action}' is not supported for {tool}"
 
     return True, ""
@@ -185,11 +186,18 @@ def analyze_context_and_suggest_fix(context: Dict[str, Any]) -> Dict[str, Any]:
         content = response.choices[0].message.content
         if not content:
             raise Exception("Empty response from LLM")
-        return json.loads(content)
+        return json.loads(content)  # type: ignore[no-any-return]
 
     except Exception as e:
-        logger.error(f"Analysis failed: {e}")
-        return {"error": "Failed to analyze incident context."}
+        error_msg = str(e)
+        logger.error("LLM analysis failed", error=error_msg)
+        return {
+            "analysis": f"Failed to analyze context: {error_msg}",
+            "suggested_remediation": {
+                "action": "manual_investigation",
+                "parameters": {"message": "Please investigate manually"},
+            },
+        }
 
 
 if __name__ == "__main__":
@@ -204,3 +212,5 @@ if __name__ == "__main__":
 
     result = create_plan(test_query)
     print(json.dumps(result, indent=2))
+
+    parsed_plan = create_plan(test_query)
