@@ -99,7 +99,7 @@ def generate_response(
             ],
             temperature=0.7,
         )
-        return response.choices[0].message.content  # type: ignore[no-any-return]
+        return response.choices[0].message.content
 
     except Exception as e:
         print(f"An unexpected error occurred while generating response: {e}")

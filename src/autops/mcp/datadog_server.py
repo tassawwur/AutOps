@@ -42,7 +42,7 @@ class DataDogMCPServer:
     def _setup_handlers(self) -> None:
         """Set up all MCP handlers for DataDog tools."""
 
-        @mcp.tool("datadog_error_rate")  # type: ignore[misc]
+        @mcp.tool("datadog_error_rate")
         async def handle_error_rate_metrics(
             service_name: str, time_window_minutes: int = 60
         ) -> List[TextContent]:
@@ -85,7 +85,7 @@ Status: {'✅ Normal' if float(metrics.get('error_rate', '0').rstrip('%')) < 5 e
                     )
                 ]
 
-        @mcp.tool("datadog_service_metrics")  # type: ignore[misc]
+        @mcp.tool("datadog_service_metrics")
         async def handle_service_metrics(
             service_name: str,
             metrics: Optional[List[str]] = None,
@@ -131,7 +131,7 @@ Health Status: {service_metrics.get('health_status', 'Unknown')}
                     )
                 ]
 
-        @mcp.tool("datadog_recent_events")  # type: ignore[misc]
+        @mcp.tool("datadog_recent_events")
         async def handle_recent_events(
             service_name: str, hours: int = 24
         ) -> List[TextContent]:
@@ -214,7 +214,7 @@ datadog_server = DataDogMCPServer()
 
 
 # MCP Handler Registration
-@mcp.list_tools()  # type: ignore[misc]
+@mcp.list_tools()
 async def handle_list_tools() -> List[Tool]:
     """Return list of available DataDog tools."""
     return [
@@ -283,7 +283,7 @@ async def handle_list_tools() -> List[Tool]:
     ]
 
 
-@mcp.list_resources()  # type: ignore[misc]
+@mcp.list_resources()
 async def handle_list_resources() -> List[Resource]:
     """Return list of available resources."""
     return [
@@ -302,7 +302,7 @@ async def handle_list_resources() -> List[Resource]:
     ]
 
 
-@mcp.read_resource()  # type: ignore[misc]
+@mcp.read_resource()
 async def handle_read_resource(uri: str) -> str:
     """Handle resource reading requests."""
     if uri == "datadog://services":

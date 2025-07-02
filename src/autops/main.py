@@ -115,7 +115,7 @@ app.add_middleware(
 )
 
 
-@app.middleware("http")  # type: ignore[misc]
+@app.middleware("http")
 async def logging_middleware(request: Request, call_next: Any) -> Any:
     """Log all requests with timing and metrics."""
     start_time = time.time()
@@ -165,7 +165,7 @@ async def logging_middleware(request: Request, call_next: Any) -> Any:
     return response
 
 
-@app.exception_handler(AutOpsException)  # type: ignore[misc]
+@app.exception_handler(AutOpsException)
 async def autops_exception_handler(request: Request, exc: AutOpsException) -> Any:
     """Handle custom AutOps exceptions."""
     log_error(logger, exc, exc.context)
@@ -179,7 +179,7 @@ async def autops_exception_handler(request: Request, exc: AutOpsException) -> An
     )
 
 
-@app.exception_handler(HTTPException)  # type: ignore[misc]
+@app.exception_handler(HTTPException)
 async def http_exception_handler(request: Request, exc: HTTPException) -> Any:
     """Handle HTTP exceptions."""
     logger.warning(
@@ -194,7 +194,7 @@ async def http_exception_handler(request: Request, exc: HTTPException) -> Any:
     )
 
 
-@app.exception_handler(Exception)  # type: ignore[misc]
+@app.exception_handler(Exception)
 async def general_exception_handler(request: Request, exc: Exception) -> Any:
     """Handle unexpected exceptions."""
     log_error(logger, exc, {"path": request.url.path, "method": request.method})
@@ -211,7 +211,7 @@ async def general_exception_handler(request: Request, exc: Exception) -> Any:
 app.include_router(webhooks.router)
 
 
-@app.get("/")  # type: ignore[misc]
+@app.get("/")
 async def root() -> Dict[str, Any]:
     """Root endpoint."""
     return {
@@ -245,7 +245,7 @@ async def metrics() -> Any:
     return Response(content=generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
 
-@app.get("/ready")  # type: ignore[misc]
+@app.get("/ready")
 async def readiness_check() -> Dict[str, Any]:
     """Kubernetes readiness check."""
     # Add checks for external dependencies

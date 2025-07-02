@@ -92,7 +92,7 @@ async def run_autops_workflow(text: str, channel_id: str) -> None:
         client.post_message(channel_id, text=error_message)
 
 
-@router.post("/slack/events")  # type: ignore[misc]
+@router.post("/slack/events")
 async def slack_events(
     request: Request, background_tasks: BackgroundTasks
 ) -> Dict[str, Any]:
@@ -124,7 +124,7 @@ async def slack_events(
     return {"status": "event type not supported"}
 
 
-@router.post("/slack/slash")  # type: ignore[misc]
+@router.post("/slack/slash")
 async def slack_slash_command(
     command: Annotated[Optional[str], Form()] = None,
     text: Annotated[str, Form()] = "",
@@ -156,7 +156,7 @@ async def slack_slash_command(
     }
 
 
-@router.post("/slack/interactive")  # type: ignore[misc]
+@router.post("/slack/interactive")
 async def slack_interactive(payload: Annotated[str, Form()]) -> Response:
     """
     Handles interactive components like button clicks.
