@@ -47,7 +47,7 @@ def configure_logging(level: str = "INFO", json_logs: bool = True) -> None:
 
 def get_logger(name: str) -> structlog.stdlib.BoundLogger:
     """Get a structured logger instance."""
-    return structlog.get_logger(name)  # type: ignore[no-any-return]  # type: ignore[no-any-return]
+    return structlog.get_logger(name)  # type: ignore[no-any-return]
 
 
 def log_api_request(

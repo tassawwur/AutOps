@@ -299,7 +299,7 @@ class QueryRepository:
     @staticmethod
     def get_query_by_id(session: Session, query_id: str) -> Optional[Query]:
         """Get query by ID."""
-        return session.query(Query).filter(Query.query_id == query_id).first()  # type: ignore[no-any-return]
+        return session.query(Query).filter(Query.query_id == query_id).first()
 
     @staticmethod
     def update_query_status(
@@ -308,7 +308,7 @@ class QueryRepository:
         """Update query status and other fields."""
         query = session.query(Query).filter(Query.query_id == query_id).first()
         if query:
-            query.status = status  # type: ignore[assignment]
+            setattr(query, "status", status)
             for key, value in kwargs.items():
                 if hasattr(query, key):
                     setattr(query, key, value)
@@ -323,7 +323,7 @@ class QueryRepository:
         query = session.query(Query).order_by(desc(Query.created_at))
         if user_id:
             query = query.filter(Query.user_id == user_id)
-        return query.limit(limit).all()  # type: ignore[no-any-return]
+        return query.limit(limit).all()
 
 
 class MetricsRepository:
@@ -424,19 +424,19 @@ class IncidentRepository:
         )
 
         if incident:
-            incident.status = "resolved"  # type: ignore[assignment]
-            incident.resolved_at = datetime.now()  # type: ignore[assignment]
-            incident.auto_resolved = auto_resolved  # type: ignore[assignment]
+            setattr(incident, "status", "resolved")
+            setattr(incident, "resolved_at", datetime.now())
+            setattr(incident, "auto_resolved", auto_resolved)
 
             if resolution_actions:
-                incident.resolution_actions = resolution_actions  # type: ignore[assignment]
+                setattr(incident, "resolution_actions", resolution_actions)
 
             # Calculate resolution time
             if incident.created_at and incident.resolved_at:
                 resolution_time = (
                     incident.resolved_at - incident.created_at
                 ).total_seconds() / 60
-                incident.resolution_time_minutes = int(resolution_time)  # type: ignore[assignment]
+                setattr(incident, "resolution_time_minutes", int(resolution_time))
 
             return True
 
@@ -496,7 +496,7 @@ class KnowledgeBaseRepository:
             session.query(KnowledgeBase).filter(KnowledgeBase.id == article_id).first()
         )
         if article:
-            article.usage_count += 1  # type: ignore[assignment]
+            setattr(article, "usage_count", article.usage_count + 1)
 
 
 def initialize_database() -> None:

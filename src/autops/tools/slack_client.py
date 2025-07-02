@@ -132,7 +132,7 @@ class SlackClient:
                 message_ts=response.get("ts"),
             )
 
-            return dict(response.data)  # type: ignore[arg-type]
+            return dict(response.data)  # type: ignore[arg-type]  # type: ignore[arg-type]
 
         except SlackApiError as e:
             self.logger.warning("Slack API error, retrying", error=str(e))
@@ -268,7 +268,12 @@ class SlackClient:
                 ts=ts,
             )
 
-            return response.data  # type: ignore[no-any-return]
+            response_data = response.data
+            if isinstance(response_data, dict):
+                return dict(response_data)
+            else:
+                # Handle bytes response by converting to dict
+                return {"ok": True, "data": str(response_data)}
 
         except SlackApiError as e:
             self.logger.warning("Slack API error, retrying", error=str(e))

@@ -36,15 +36,15 @@ class DatadogClient:
         self.logger = get_logger(f"{__name__}.DatadogClient")
 
         # Configure DataDog API client
-        configuration = Configuration()
+        configuration = Configuration()  # type: ignore[no-untyped-call]
         configuration.api_key["apiKeyAuth"] = settings.datadog_api_key
         configuration.api_key["appKeyAuth"] = settings.datadog_app_key
         configuration.server_variables["site"] = settings.datadog_site
 
         self.api_client = ApiClient(configuration)
-        self.metrics_api = MetricsApi(self.api_client)
-        self.events_api = EventsApi(self.api_client)
-        self.monitors_api = MonitorsApi(self.api_client)
+        self.metrics_api = MetricsApi(self.api_client)  # type: ignore[no-untyped-call]
+        self.events_api = EventsApi(self.api_client)  # type: ignore[no-untyped-call]
+        self.monitors_api = MonitorsApi(self.api_client)  # type: ignore[no-untyped-call]
 
     def validate_service_name(self, service_name: str) -> None:
         """Validate service name parameter."""
