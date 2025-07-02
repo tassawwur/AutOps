@@ -20,7 +20,7 @@ class Environment(str, Enum):
     PRODUCTION = "production"
 
 
-class Settings(BaseSettings):
+class Settings(BaseSettings):  # type: ignore[misc]
     """Application settings with validation."""
 
     # Environment

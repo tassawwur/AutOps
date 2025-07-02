@@ -299,7 +299,7 @@ class QueryRepository:
     @staticmethod
     def get_query_by_id(session: Session, query_id: str) -> Optional[Query]:
         """Get query by ID."""
-        return session.query(Query).filter(Query.query_id == query_id).first()
+        return session.query(Query).filter(Query.query_id == query_id).first()  # type: ignore[no-any-return]
 
     @staticmethod
     def update_query_status(
@@ -308,7 +308,7 @@ class QueryRepository:
         """Update query status and other fields."""
         query = session.query(Query).filter(Query.query_id == query_id).first()
         if query:
-            query.status = status  # type: ignore
+            query.status = status
             for key, value in kwargs.items():
                 if hasattr(query, key):
                     setattr(query, key, value)
@@ -323,7 +323,7 @@ class QueryRepository:
         query = session.query(Query).order_by(desc(Query.created_at))
         if user_id:
             query = query.filter(Query.user_id == user_id)
-        return query.limit(limit).all()
+        return query.limit(limit).all()  # type: ignore[no-any-return]
 
 
 class MetricsRepository:
@@ -372,7 +372,7 @@ class MetricsRepository:
         if end_time:
             query = query.filter(ServiceMetrics.timestamp <= end_time)
 
-        return query.order_by(desc(ServiceMetrics.timestamp)).all()
+        return query.order_by(desc(ServiceMetrics.timestamp)).all()  # type: ignore[no-any-return]
 
     @staticmethod
     def cleanup_old_metrics(session: Session, days_to_keep: int = 30) -> int:
@@ -383,7 +383,7 @@ class MetricsRepository:
             .filter(ServiceMetrics.timestamp < cutoff_date)
             .delete()
         )
-        return deleted
+        return deleted  # type: ignore[no-any-return]
 
 
 class IncidentRepository:
@@ -409,7 +409,7 @@ class IncidentRepository:
         if service_name:
             query = query.filter(Incident.service_name == service_name)
 
-        return query.order_by(desc(Incident.created_at)).all()
+        return query.order_by(desc(Incident.created_at)).all()  # type: ignore[no-any-return]
 
     @staticmethod
     def resolve_incident(
@@ -424,19 +424,19 @@ class IncidentRepository:
         )
 
         if incident:
-            incident.status = "resolved"  # type: ignore
-            incident.resolved_at = datetime.now()  # type: ignore
-            incident.auto_resolved = auto_resolved  # type: ignore
+            incident.status = "resolved"
+            incident.resolved_at = datetime.now()
+            incident.auto_resolved = auto_resolved
 
             if resolution_actions:
-                incident.resolution_actions = resolution_actions  # type: ignore
+                incident.resolution_actions = resolution_actions
 
             # Calculate resolution time
             if incident.created_at and incident.resolved_at:
                 resolution_time = (
                     incident.resolved_at - incident.created_at
                 ).total_seconds() / 60
-                incident.resolution_time_minutes = int(resolution_time)  # type: ignore
+                incident.resolution_time_minutes = int(resolution_time)
 
             return True
 
@@ -487,7 +487,7 @@ class KnowledgeBaseRepository:
                 KnowledgeBase.service_names.contains([service_name])
             )
 
-        return search_query.order_by(desc(KnowledgeBase.usage_count)).limit(limit).all()
+        return search_query.order_by(desc(KnowledgeBase.usage_count)).limit(limit).all()  # type: ignore[no-any-return]
 
     @staticmethod
     def increment_usage(session: Session, article_id: int) -> None:
@@ -496,7 +496,7 @@ class KnowledgeBaseRepository:
             session.query(KnowledgeBase).filter(KnowledgeBase.id == article_id).first()
         )
         if article:
-            article.usage_count += 1  # type: ignore
+            article.usage_count += 1
 
 
 def initialize_database() -> None:

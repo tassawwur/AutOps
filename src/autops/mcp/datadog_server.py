@@ -5,6 +5,7 @@ Provides tools for querying DataDog metrics and monitoring data.
 
 import asyncio
 from typing import Any, Dict, List, Optional, TypedDict
+from pydantic import AnyUrl
 
 from mcp.server.fastmcp import FastMCP
 from mcp.types import Resource, TextContent
@@ -287,13 +288,13 @@ async def handle_list_resources() -> List[Resource]:
     """Return list of available resources."""
     return [
         Resource(
-            uri="datadog://services",
+            uri=AnyUrl("datadog://services"),
             name="DataDog Services",
             description="List of services monitored by DataDog",
             mimeType="application/json",
         ),
         Resource(
-            uri="datadog://dashboards",
+            uri=AnyUrl("datadog://dashboards"),
             name="DataDog Dashboards",
             description="Available DataDog dashboards",
             mimeType="application/json",

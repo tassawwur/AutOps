@@ -119,7 +119,7 @@ class SlackClient:
             if thread_ts:
                 kwargs["thread_ts"] = thread_ts
 
-            response = self.client.chat_postMessage(**kwargs)  # type: ignore[arg-type]
+            response = self.client.chat_postMessage(**kwargs)
 
             # Log execution
             duration_ms = (time.time() - start_time) * 1000
@@ -132,7 +132,7 @@ class SlackClient:
                 message_ts=response.get("ts"),
             )
 
-            return dict(response.data)  # type: ignore[arg-type]
+            return dict(response.data)
 
         except SlackApiError as e:
             self.logger.warning("Slack API error, retrying", error=str(e))
@@ -253,9 +253,9 @@ class SlackClient:
             if text:
                 kwargs["text"] = text
             if blocks:
-                kwargs["blocks"] = blocks  # type: ignore
+                kwargs["blocks"] = blocks  # type: ignore[assignment]
 
-            response = self.client.chat_update(**kwargs)  # type: ignore
+            response = self.client.chat_update(**kwargs)
 
             # Log execution
             duration_ms = (time.time() - start_time) * 1000
@@ -268,7 +268,7 @@ class SlackClient:
                 ts=ts,
             )
 
-            return response.data  # type: ignore
+            return response.data  # type: ignore[no-any-return]
 
         except SlackApiError as e:
             self.logger.warning("Slack API error, retrying", error=str(e))
