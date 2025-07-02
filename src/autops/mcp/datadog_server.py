@@ -4,15 +4,22 @@ Provides tools for querying DataDog metrics and monitoring data.
 """
 
 import asyncio
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, TypedDict
 
 from mcp.server.fastmcp import FastMCP
-from mcp.server.models import Tool
 from mcp.types import Resource, TextContent
 
 from ..tools.datadog_client import get_datadog_client
 from ..config import get_settings
 from ..utils.logging import get_logger
+
+
+# Tool is defined inline since mcp.server.models.Tool may not exist
+class Tool(TypedDict):
+    name: str
+    description: str
+    inputSchema: Dict[str, Any]
+
 
 # Initialize components
 settings = get_settings()
@@ -34,7 +41,7 @@ class DataDogMCPServer:
     def _setup_handlers(self) -> None:
         """Set up all MCP handlers for DataDog tools."""
 
-        @mcp.tool("datadog_error_rate")  # type: ignore
+        @mcp.tool("datadog_error_rate")  # type: ignore[misc]
         async def handle_error_rate_metrics(
             service_name: str, time_window_minutes: int = 60
         ) -> List[TextContent]:
@@ -77,7 +84,7 @@ Status: {'✅ Normal' if float(metrics.get('error_rate', '0').rstrip('%')) < 5 e
                     )
                 ]
 
-        @mcp.tool("datadog_service_metrics")  # type: ignore
+        @mcp.tool("datadog_service_metrics")  # type: ignore[misc]
         async def handle_service_metrics(
             service_name: str,
             metrics: Optional[List[str]] = None,
@@ -123,7 +130,7 @@ Health Status: {service_metrics.get('health_status', 'Unknown')}
                     )
                 ]
 
-        @mcp.tool("datadog_recent_events")  # type: ignore
+        @mcp.tool("datadog_recent_events")  # type: ignore[misc]
         async def handle_recent_events(
             service_name: str, hours: int = 24
         ) -> List[TextContent]:
@@ -206,7 +213,7 @@ datadog_server = DataDogMCPServer()
 
 
 # MCP Handler Registration
-@mcp.list_tools()  # type: ignore
+@mcp.list_tools()  # type: ignore[misc]
 async def handle_list_tools() -> List[Tool]:
     """Return list of available DataDog tools."""
     return [
@@ -275,7 +282,7 @@ async def handle_list_tools() -> List[Tool]:
     ]
 
 
-@mcp.list_resources()  # type: ignore
+@mcp.list_resources()  # type: ignore[misc]
 async def handle_list_resources() -> List[Resource]:
     """Return list of available resources."""
     return [
@@ -294,7 +301,7 @@ async def handle_list_resources() -> List[Resource]:
     ]
 
 
-@mcp.read_resource()  # type: ignore
+@mcp.read_resource()  # type: ignore[misc]
 async def handle_read_resource(uri: str) -> str:
     """Handle resource reading requests."""
     if uri == "datadog://services":
