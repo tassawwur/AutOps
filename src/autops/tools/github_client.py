@@ -104,7 +104,7 @@ class GitHubClient:
             target_branch = branch or repo.default_branch
 
             # Get workflow runs for the branch
-            workflow_runs = repo.get_workflow_runs()  # type: ignore
+            workflow_runs = repo.get_workflow_runs()
 
             pipeline_data: Dict[str, Any] = {
                 "repository": repo_name,

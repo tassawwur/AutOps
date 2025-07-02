@@ -18,6 +18,7 @@ from sqlalchemy import (
     desc,
     or_,
     Engine,
+    text,
 )
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session, relationship
@@ -245,7 +246,7 @@ class DatabaseManager:
 
             # Try to connect and execute a simple query
             with self.engine.connect() as conn:
-                conn.execute("SELECT 1")
+                conn.execute(text("SELECT 1"))
 
             return {"status": "healthy", "message": "Database connection successful"}
         except Exception as e:
@@ -310,7 +311,7 @@ class QueryRepository:
             query.status = status  # type: ignore
             for key, value in kwargs.items():
                 if hasattr(query, key):
-                    setattr(query, key, value)  # type: ignore
+                    setattr(query, key, value)
             return True
         return False
 
