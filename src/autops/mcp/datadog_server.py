@@ -215,7 +215,7 @@ datadog_server = DataDogMCPServer()
 
 # MCP Handler Registration
 @mcp.list_tools()  # type: ignore[misc]
-def handle_list_tools() -> List[Tool]:
+async def handle_list_tools() -> List[Tool]:
     """Return list of available DataDog tools."""
     return [
         Tool(
@@ -284,7 +284,7 @@ def handle_list_tools() -> List[Tool]:
 
 
 @mcp.list_resources()  # type: ignore[misc]
-def handle_list_resources() -> List[Resource]:
+async def handle_list_resources() -> List[Resource]:
     """Return list of available resources."""
     return [
         Resource(
@@ -303,7 +303,7 @@ def handle_list_resources() -> List[Resource]:
 
 
 @mcp.read_resource()  # type: ignore[misc]
-def handle_read_resource(uri: str) -> str:
+async def handle_read_resource(uri: str) -> str:
     """Handle resource reading requests."""
     if uri == "datadog://services":
         # Return mock service list - in production, this would query DataDog API
